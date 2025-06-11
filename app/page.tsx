@@ -18,6 +18,20 @@ export default function Page() {
       setTheme("dark");
     }
   }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setSidebarState("collapsed");
+      }
+    };
+    
+    handleResize();
+    
+    window.addEventListener("resize", handleResize);
+    
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
     localStorage.setItem("theme", theme);
@@ -28,21 +42,21 @@ export default function Page() {
   const toggleTheme = () => setTheme((t) => (t === "light" ? "dark" : "light"));
 
   return (
-    <div className="relative flex h-screen w-full">
+    <div className={`relative flex h-screen w-full ${theme === 'dark' ? 'bg-[#1C151A]' : 'bg-[#F2E1F4]'}`}>
       <div className="relative z-10">
         <Sidebar sidebarState={sidebarState} theme={theme} />
       </div>
 
       <div
         className={`flex-1 transition-all duration-300 relative z-10 ${
-          sidebarState === "expanded" ? "ml-64" : "ml-16"
+          sidebarState === "expanded" ? "ml-64" : ""
         }`}
       >
         <div className="relative z-20">
-          <SidebarTrigger onToggle={toggleSidebar} />
+          <SidebarTrigger onToggle={toggleSidebar} sidebarState={sidebarState} />
         </div>
         <div className="relative z-10">
-          <ChatArea onToggleTheme={toggleTheme} theme={theme} />
+          <ChatArea onToggleTheme={toggleTheme} theme={theme} sidebarState={sidebarState} />
         </div>
       </div>
     </div>

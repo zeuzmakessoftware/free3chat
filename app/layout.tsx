@@ -12,17 +12,17 @@ const proximaNova = localFont({
     {
       path: "../public/Proxima-Nova-Font/Proxima Nova Bold.otf",
       weight: "700",
-      style: "normal",
+      style: "bold",
     },
     {
       path: "../public/Proxima-Nova-Font/Proxima Nova Thin.otf",
       weight: "100",
-      style: "normal",
+      style: "thin",
     },
     {
       path: "../public/Proxima-Nova-Font/Proxima Nova Semibold.otf",
       weight: "600",
-      style: "normal",
+      style: "semibold",
     },
   ],
   variable: "--font-proxima-nova",

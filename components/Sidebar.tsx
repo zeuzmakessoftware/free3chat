@@ -1,4 +1,4 @@
-import { PlusIcon, SearchIcon, LogInIcon } from '@/components/Icons';
+import { SearchIcon, LogInIcon } from '@/components/Icons';
 
 interface SidebarProps {
   sidebarState: 'expanded' | 'collapsed';
@@ -12,59 +12,49 @@ export default function Sidebar({ sidebarState, theme }: SidebarProps) {
     <aside
       role="complementary"
       aria-label="Sidebar"
-      className={`fixed top-0 left-0 h-full bg-gradient-to-t ${theme === 'dark' ? 'from-[#11040E] to-[#21141E]' : 'from-[#F2E1F4] to-[#F2E1F4]'} dark:bg-gray-900 border-gray-200 dark:border-gray-700 shadow-lg transition-width duration-300 ease-in-out ${
+      className={`fixed top-0 left-0 h-full bg-gradient-to-t ${theme === 'dark' ? 'from-[#11040E] to-[#1C151A]' : 'from-[#F2E1F4] to-[#F2E1F4]'} dark:bg-gray-900 border-gray-200 dark:border-gray-700 shadow-lg transition-width duration-300 ease-in-out ${
         isExpanded ? 'w-64' : 'w-16'
       } overflow-hidden flex flex-col`}
     >
       <header className="flex items-center justify-center px-4 py-4 border-gray-200 dark:border-gray-700">
         {isExpanded ? (
-          <h1 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-black'}`}>Open T3.chat</h1>
+          <h1 className={`text-xl !font-bold ${theme === 'dark' ? 'text-[#f2c0d7]' : 'text-[#ba4077]'}`}>OST3.chat</h1>
         ) : (
-          <></>
+          <div className="w-6 h-6"></div>
         )}
       </header>
-      <div className="flex-1 px-4 py-6 space-y-6 overflow-y-auto">
+      <div className="flex-1 px-4 space-y-4 overflow-y-auto">
         {isExpanded && (
           <>
             <button
-              className="w-full flex bg-pink-700 items-center justify-center rounded-md px-4 py-2 text-white font-medium hover:opacity-90 transition"
+              className={`w-full flex border !border-[#3e183d]/50 ${theme === 'dark' ? 'bg-radial from-[#5e183d] to-[#401020] text-[#f2c0d7] hover:from-[#8e486d] hover:to-[#6e284d]' : 'bg-[#aa3067] text-[#f2f0f7] hover:bg-[#ea70a7] hover:text-[#f2f0f7]'} items-center justify-center rounded-md px-4 py-2 font-bold text-sm transition`}
             >
-              <PlusIcon className="mr-2 h-5 w-5" />
-              New Chat
+              <span>New Chat</span>
             </button>
-            <div className="relative flex items-center gap-2 w-full bg-gray-50 rounded-md">
-              <SearchIcon className="h-4 w-4 text-gray-400 ml-2" />
+            <div className="flex items-center gap-2 w-full pb-1 mb-1" style={{ borderBottom: theme === 'dark' ? '1px solid #922057' : '1px solid #b25057' }}>
+              <SearchIcon className={`h-4 w-4 ${theme === 'dark' ? 'text-[#f2c0d7]' : 'text-[#ba4077]'}`} />
               <input
                 type="text"
-                placeholder="Search threads..."
-                className="w-full rounded-md py-2 pl-10 pr-4 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Search your threads..."
+                className="w-full rounded-md py-2 pl-2 pr-4 text-sm !placeholder-[#725967] dark:!placeholder-[#c289a7] focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
-            {/* Thread list */}
             <ul className="space-y-2">
-              {/* Replace with dynamic items */}
-              <li>
+              {/* <li> I'll uncomment once I get chat history working
                 <a href="#" className="block rounded px-2 py-1 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
                   Sample Thread
                 </a>
-              </li>
+              </li> */}
             </ul>
           </>
         )}
         {!isExpanded && (
-          <ul className="flex flex-col items-center space-y-4">
-            <li>
-              <PlusIcon className="h-6 w-6 text-gray-500" />
-            </li>
-            <li>
-              <SearchIcon className="h-6 w-6 text-gray-500" />
-            </li>
-          </ul>
+          <></>
         )}
       </div>
-      <footer className="px-4 py-4 border-t border-gray-200 dark:border-gray-700">
+      <footer className="px-4 py-4">
         {isExpanded ? (
-          <button className="flex items-center text-gray-700 hover:text-primary dark:text-gray-300">
+          <button className="flex items-center text-gray-700 hover:text-primary dark:text-gray-300 p-4">
             <LogInIcon className="mr-2 h-5 w-5" />
             Login
           </button>

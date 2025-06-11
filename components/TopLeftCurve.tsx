@@ -1,6 +1,5 @@
 import React from 'react';
 
-// This SVG creates the curved corner effect with the shadow for the left side
 const CurveSvg = () => (
   <svg
     className="absolute -left-8 h-9 origin-top-right -scale-x-100 skew-x-[30deg] overflow-visible"
@@ -36,7 +35,6 @@ const CurveSvg = () => (
   </svg>
 );
 
-// The component includes the container div with the shadow and the SVG.
 export default function TopLeftCurve() {
   return (
     <div

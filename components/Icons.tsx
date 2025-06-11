@@ -1,7 +1,5 @@
-// /components/ui/Icons.tsx
 import React from 'react';
 
-// Using a generic props type for all icons for simplicity
 type IconProps = React.SVGProps<SVGSVGElement>;
 
 export const Logo = (props: IconProps) => (

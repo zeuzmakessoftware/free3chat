@@ -1,7 +1,10 @@
 import React from 'react';
 
-// This SVG creates the curved corner effect with the shadow.
-const CurveSvg = () => (
+interface TopRightCurveProps {
+  theme: string;
+}
+
+const CurveSvg = ({ theme }: TopRightCurveProps) => (
   <svg
     className="absolute -right-8 h-9 origin-top-left skew-x-[30deg] overflow-visible"
     version="1.1"
@@ -11,7 +14,7 @@ const CurveSvg = () => (
     xmlSpace="preserve"
   >
     <line
-      stroke="hsl(var(--background))"
+      stroke={theme === 'dark' ? '#1C151A' : '#F2E1F4'}
       strokeWidth="2px"
       shapeRendering="optimizeQuality"
       vectorEffect="non-scaling-stroke"
@@ -25,7 +28,7 @@ const CurveSvg = () => (
     <path
       stroke="hsl(var(--chat-border))"
       className="translate-y-[0.5px]"
-      fill="hsl(var(--background))"
+      fill={theme === 'dark' ? '#1C151A' : '#F2E1F4'}
       shapeRendering="optimizeQuality"
       strokeWidth="1px"
       strokeLinecap="round"
@@ -36,13 +39,12 @@ const CurveSvg = () => (
   </svg>
 );
 
-// The component includes the container div with the shadow and the SVG.
-export default function TopRightCurve() {
+export default function TopRightCurve({ theme }: TopRightCurveProps) {
   return (
     <div
-      className="group pointer-events-none absolute top-[0.96em] z-10 -mb-8 h-32 w-full origin-top transition-all ease-snappy"
+      className="group pointer-events-none absolute top-[0.97em] z-10 -mb-8 h-32 w-full origin-top transition-all ease-snappy"
     >
-      <CurveSvg />
+      <CurveSvg theme={theme} />
     </div>
   );
 }

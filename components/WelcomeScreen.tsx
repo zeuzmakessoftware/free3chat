@@ -1,29 +1,105 @@
+import { useState } from 'react';
 import { SparklesIcon, NewspaperIcon, CodeIcon, GraduationCapIcon } from '@/components/Icons';
 
-export default function WelcomeScreen() {
+interface WelcomeScreenProps {
+  theme: string;
+}
+
+export default function WelcomeScreen({ theme }: WelcomeScreenProps) {
+  const options = {
+    Create: {
+      icon: SparklesIcon,
+      description: "Create something new",
+    },
+    Explore: {
+      icon: NewspaperIcon,
+      description: "Explore something new",
+    },
+    Code: {
+      icon: CodeIcon,
+      description: "Code something new",
+    },
+    Learn: {
+      icon: GraduationCapIcon,
+      description: "Learn something new",
+    },
+  } as const;
+
+  const initialQuestions = [
+    "What is AI?",
+    "What is machine learning?",
+    "What is deep learning?",
+    "What is reinforcement learning?",
+  ];
+
+  const questionMap: Record<keyof typeof options, string[]> = {
+    Create: [
+      "Generate a poem",
+      "Design a logo",
+      "Outline a blog post",
+    ],
+    Explore: [
+      "Show me today's headlines",
+      "Discover a new recipe",
+      "Find trending tech articles",
+    ],
+    Code: [
+      "Generate a React snippet",
+      "Debug my function",
+      "Convert JS to TS",
+    ],
+    Learn: [
+      "Explain recursion",
+      "Teach me calculus",
+      "What is cryptography?",
+    ],
+  };
+
+  const [activeTab, setActiveTab] = useState<keyof typeof options | null>(null);
+
+  const questionsToShow = activeTab ? questionMap[activeTab] : initialQuestions;
+
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col space-y-12 px-4 pb-10 pt-safe-offset-10">
-      <div className="flex h-[calc(100vh-20rem)] items-start justify-center">
+    <div className={`mx-auto flex w-full max-w-3xl flex-col space-y-12 px-4 pb-10 pt-safe-offset-10 ${theme === "dark" ? "dark" : ""}`}>
+      <div className="flex h-[calc(100vh-20rem)] p-7 items-start justify-center">
         <div className="w-full space-y-6 px-2 pt-[calc(max(15vh,2.5rem))] duration-300 animate-in fade-in-50 zoom-in-95 sm:px-8">
-          <h2 className="text-3xl font-semibold">How can I help you?</h2>
+          <div role="heading" aria-level={2} className="text-3xl font-bold">How can I help you?</div>
+
           <div className="flex flex-row flex-wrap gap-2.5 text-sm max-sm:justify-evenly">
-            <button className="..."><SparklesIcon className="max-sm:block" /><div>Create</div></button>
-            <button className="..."><NewspaperIcon className="max-sm:block" /><div>Explore</div></button>
-            <button className="..."><CodeIcon className="max-sm:block" /><div>Code</div></button>
-            <button className="..."><GraduationCapIcon className="max-sm:block" /><div>Learn</div></button>
+            {Object.entries(options).map(([key, { icon: Icon }]) => (
+              <button
+                key={key}
+                onClick={() => setActiveTab(key as keyof typeof options)}
+                className={`
+                  flex items-center gap-2
+                  px-6 py-3
+                  sm:rounded-[40px] rounded-[15px]
+                  border !border-white/10
+                  max-sm:w-16 max-sm:h-16 max-sm:p-0 max-sm:justify-center max-sm:flex-col
+                  ${
+                    activeTab === key
+                      ? 'bg-secondary/70 opacity-100'
+                      : 'bg-secondary/50 opacity-80 hover:bg-secondary/70 hover:opacity-100'
+                  }
+                `}
+              >
+                <Icon className="max-sm:block max-sm:h-6 max-sm:w-6" />
+                <span className="font-semibold max-sm:text-xs">{key}</span>
+              </button>
+            ))}
           </div>
+
           <div className="flex flex-col text-foreground">
-            {/* Suggestion buttons */}
-            <div className="flex items-start gap-2 border-t border-secondary/40 py-1 first:border-none">
-                <button className="w-full rounded-md py-2 text-left text-secondary-foreground hover:bg-secondary/50 sm:px-3">
-                    <span>How does AI work?</span>
+            {questionsToShow.map((q, i) => (
+              <div key={i} className="flex items-start gap-2 border-b border-secondary/40 py-1 first:border-none">
+                <button className="w-full rounded-md py-2 text-left text-secondary-foreground hover:bg-white/10 sm:px-3">
+                  <span className="opacity-80">{q}</span>
                 </button>
-            </div>
-            {/* ... other suggestions */}
+              </div>
+            ))}
           </div>
         </div>
       </div>
     </div>
   );
 }
-// NOTE: I've truncated the repetitive button classes for brevity. Copy the full classes from the original.
