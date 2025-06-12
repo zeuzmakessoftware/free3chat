@@ -43,7 +43,7 @@ export default function ChatArea({ onToggleTheme, theme, sidebarState, prompt, s
         <TopRightControls onToggleTheme={onToggleTheme} sidebarState={sidebarState} theme={theme} />
         
         <div role="log" aria-label="Chat messages" aria-live="polite">
-          {showWelcome && <WelcomeScreen theme={theme} prompt={prompt} setPrompt={setPrompt} />}
+          {showWelcome && <WelcomeScreen theme={theme} setPrompt={setPrompt} />}
         </div>
       </div>
     </main>

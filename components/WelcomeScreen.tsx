@@ -4,11 +4,10 @@ import { motion } from 'framer-motion';
 
 interface WelcomeScreenProps {
   theme: string;
-  prompt: string;
   setPrompt: (prompt: string) => void;
 }
 
-export default function WelcomeScreen({ theme, prompt, setPrompt }: WelcomeScreenProps) {
+export default function WelcomeScreen({ theme, setPrompt }: WelcomeScreenProps) {
   const options = {
     Create: {
       icon: SparklesIcon,
