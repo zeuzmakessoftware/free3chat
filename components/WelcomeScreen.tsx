@@ -35,10 +35,10 @@ export default function WelcomeScreen({ theme, setPrompt }: WelcomeScreenProps) 
   ];
 
   const questionMap: Record<keyof typeof options, string[]> = {
-    Create: ['Generate a poem', 'Design a logo', 'Outline a blog post'],
-    Explore: ["Show me today's headlines", 'Discover a new recipe', 'Find trending tech articles'],
-    Code: ['Generate a React snippet', 'Debug my function', 'Convert JS to TS'],
-    Learn: ['Explain recursion', 'Teach me calculus', 'What is cryptography?'],
+    Create: ['Generate a poem about the ocean', 'Design a logo for a coffee shop', 'Outline a blog post about Next.js 14'],
+    Explore: ["Show me today's headlines in tech", 'Discover a new recipe for pasta', 'Find trending articles on space exploration'],
+    Code: ['Generate a React hook for fetching data', 'Debug this Python function for me', 'Convert this JavaScript snippet to TypeScript'],
+    Learn: ['Explain recursion with a simple analogy', 'Teach me the basics of calculus', 'What is cryptography and how does it work?'],
   };
 
   const [activeTab, setActiveTab] = useState<keyof typeof options | null>(null);
@@ -49,7 +49,7 @@ export default function WelcomeScreen({ theme, setPrompt }: WelcomeScreenProps) 
       className={`mx-auto flex w-full max-w-3xl flex-col space-y-12 px-4 pb-10 pt-safe-offset-10 ${
         theme === 'dark' ? 'dark' : ''
       }`}
-      animate={{ scale: [0.8, 1] }}
+      animate={{ scale: [0.95, 1], opacity: [0, 1] }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
     >
       <div className="flex h-[calc(100vh-20rem)] p-7 items-start justify-center">
@@ -69,6 +69,7 @@ export default function WelcomeScreen({ theme, setPrompt }: WelcomeScreenProps) 
                   sm:rounded-[40px] rounded-[15px]
                   border !border-white/10
                   max-sm:w-16 max-sm:h-16 max-sm:p-0 max-sm:justify-center max-sm:flex-col
+                  transition-all
                   ${
                     activeTab === key
                       ? 'bg-secondary/70 opacity-100'
@@ -84,7 +85,7 @@ export default function WelcomeScreen({ theme, setPrompt }: WelcomeScreenProps) 
 
           <div className="flex flex-col text-foreground">
             {questionsToShow.map((q, i) => (
-              <div key={i} className="flex items-start gap-2 border-b border-secondary/40 py-1 first:border-none">
+              <div key={i} className="flex items-start gap-2 border-b border-secondary/40 py-1 first:border-t first:border-secondary/40">
                 <button onClick={() => setPrompt(q)} className="w-full rounded-md py-2 text-left text-secondary-foreground hover:bg-white/10 sm:px-3">
                   <span className="opacity-80">{q}</span>
                 </button>
