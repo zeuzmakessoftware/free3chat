@@ -7,7 +7,7 @@ import ChatArea from "@/components/ChatArea";
 export default function Page() {
   const [sidebarState, setSidebarState] = useState<"expanded" | "collapsed">("expanded");
   const [theme, setTheme] = useState("light");
-  const [prompt, setPrompt] = useState("");
+  const [firstPrompt, setFirstPrompt] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("theme");
@@ -44,20 +44,20 @@ export default function Page() {
 
   return (
     <div className={`relative flex h-screen w-full ${theme === 'dark' ? 'bg-[#1C151A]' : 'bg-[#F2E1F4]'}`}>
-      <div className="relative z-10">
+      <div className="relative">
         <Sidebar sidebarState={sidebarState} theme={theme} />
       </div>
 
       <div
-        className={`flex-1 transition-all duration-300 relative z-10 ${
+        className={`flex-1 transition-all duration-300 relative ${
           sidebarState === "expanded" ? "ml-64" : ""
         }`}
       >
-        <div className="relative z-20">
+        <div className="relative">
           <SidebarTrigger onToggle={toggleSidebar} sidebarState={sidebarState} theme={theme} />
         </div>
-        <div className="relative z-10">
-          <ChatArea onToggleTheme={toggleTheme} theme={theme} sidebarState={sidebarState} prompt={prompt} setPrompt={setPrompt} />
+        <div className="relative">
+          <ChatArea onToggleTheme={toggleTheme} theme={theme} sidebarState={sidebarState} firstPrompt={firstPrompt} setFirstPrompt={setFirstPrompt} />
         </div>
       </div>
     </div>
