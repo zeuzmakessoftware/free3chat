@@ -1,69 +1,63 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { SparklesIcon, NewspaperIcon, CodeIcon, GraduationCapIcon } from '@/components/Icons';
+import { motion } from 'framer-motion';
 
 interface WelcomeScreenProps {
   theme: string;
+  prompt: string;
+  setPrompt: (prompt: string) => void;
 }
 
-export default function WelcomeScreen({ theme }: WelcomeScreenProps) {
+export default function WelcomeScreen({ theme, prompt, setPrompt }: WelcomeScreenProps) {
   const options = {
     Create: {
       icon: SparklesIcon,
-      description: "Create something new",
+      description: 'Create something new',
     },
     Explore: {
       icon: NewspaperIcon,
-      description: "Explore something new",
+      description: 'Explore something new',
     },
     Code: {
       icon: CodeIcon,
-      description: "Code something new",
+      description: 'Code something new',
     },
     Learn: {
       icon: GraduationCapIcon,
-      description: "Learn something new",
+      description: 'Learn something new',
     },
   } as const;
 
   const initialQuestions = [
-    "What is AI?",
-    "What is machine learning?",
-    "What is deep learning?",
-    "What is reinforcement learning?",
+    'What is AI?',
+    'What is machine learning?',
+    'What is deep learning?',
+    'What is reinforcement learning?',
   ];
 
   const questionMap: Record<keyof typeof options, string[]> = {
-    Create: [
-      "Generate a poem",
-      "Design a logo",
-      "Outline a blog post",
-    ],
-    Explore: [
-      "Show me today's headlines",
-      "Discover a new recipe",
-      "Find trending tech articles",
-    ],
-    Code: [
-      "Generate a React snippet",
-      "Debug my function",
-      "Convert JS to TS",
-    ],
-    Learn: [
-      "Explain recursion",
-      "Teach me calculus",
-      "What is cryptography?",
-    ],
+    Create: ['Generate a poem', 'Design a logo', 'Outline a blog post'],
+    Explore: ["Show me today's headlines", 'Discover a new recipe', 'Find trending tech articles'],
+    Code: ['Generate a React snippet', 'Debug my function', 'Convert JS to TS'],
+    Learn: ['Explain recursion', 'Teach me calculus', 'What is cryptography?'],
   };
 
   const [activeTab, setActiveTab] = useState<keyof typeof options | null>(null);
-
   const questionsToShow = activeTab ? questionMap[activeTab] : initialQuestions;
 
   return (
-    <div className={`mx-auto flex w-full max-w-3xl flex-col space-y-12 px-4 pb-10 pt-safe-offset-10 ${theme === "dark" ? "dark" : ""}`}>
+    <motion.div
+      className={`mx-auto flex w-full max-w-3xl flex-col space-y-12 px-4 pb-10 pt-safe-offset-10 ${
+        theme === 'dark' ? 'dark' : ''
+      }`}
+      animate={{ scale: [0.8, 1] }}
+      transition={{ duration: 0.3, ease: 'easeInOut' }}
+    >
       <div className="flex h-[calc(100vh-20rem)] p-7 items-start justify-center">
         <div className="w-full space-y-6 px-2 pt-[calc(max(15vh,2.5rem))] duration-300 animate-in fade-in-50 zoom-in-95 sm:px-8">
-          <div role="heading" aria-level={2} className="text-3xl font-bold">How can I help you?</div>
+          <div role="heading" aria-level={2} className="text-3xl font-bold">
+            How can I help you?
+          </div>
 
           <div className="flex flex-row flex-wrap gap-2.5 text-sm max-sm:justify-evenly">
             {Object.entries(options).map(([key, { icon: Icon }]) => (
@@ -92,7 +86,7 @@ export default function WelcomeScreen({ theme }: WelcomeScreenProps) {
           <div className="flex flex-col text-foreground">
             {questionsToShow.map((q, i) => (
               <div key={i} className="flex items-start gap-2 border-b border-secondary/40 py-1 first:border-none">
-                <button className="w-full rounded-md py-2 text-left text-secondary-foreground hover:bg-white/10 sm:px-3">
+                <button onClick={() => setPrompt(q)} className="w-full rounded-md py-2 text-left text-secondary-foreground hover:bg-white/10 sm:px-3">
                   <span className="opacity-80">{q}</span>
                 </button>
               </div>
@@ -100,6 +94,6 @@ export default function WelcomeScreen({ theme }: WelcomeScreenProps) {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -7,6 +7,7 @@ import ChatArea from "@/components/ChatArea";
 export default function Page() {
   const [sidebarState, setSidebarState] = useState<"expanded" | "collapsed">("expanded");
   const [theme, setTheme] = useState("light");
+  const [prompt, setPrompt] = useState("");
 
   useEffect(() => {
     const saved = localStorage.getItem("theme");
@@ -53,10 +54,10 @@ export default function Page() {
         }`}
       >
         <div className="relative z-20">
-          <SidebarTrigger onToggle={toggleSidebar} sidebarState={sidebarState} />
+          <SidebarTrigger onToggle={toggleSidebar} sidebarState={sidebarState} theme={theme} />
         </div>
         <div className="relative z-10">
-          <ChatArea onToggleTheme={toggleTheme} theme={theme} sidebarState={sidebarState} />
+          <ChatArea onToggleTheme={toggleTheme} theme={theme} sidebarState={sidebarState} prompt={prompt} setPrompt={setPrompt} />
         </div>
       </div>
     </div>

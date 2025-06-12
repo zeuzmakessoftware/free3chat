@@ -3687,7 +3687,7 @@
             }
 
             #chat-input:focus,
-            #chat-input:focus-visible {
+            #chat-input:focus-visible, #threads:focus-visible, #threads:focus {
             outline: none !important;
             box-shadow: none !important;
             border-color: transparent !important;

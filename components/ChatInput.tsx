@@ -4,8 +4,15 @@ import {
   GlobeIcon,
   PaperclipIcon,
 } from '@/components/Icons';
+import HoldTooltip from './HoldTooltip';
 
-export default function ChatInput({ theme }: { theme: string }) {
+interface ChatInputProps {
+  theme: string;
+  prompt: string;
+  setPrompt: (prompt: string) => void;
+}
+
+export default function ChatInput({ theme, prompt, setPrompt }: ChatInputProps) {
   return (
     <div className="absolute bottom-0 left-0 right-0 z-10 w-full px-2 pointer-events-none">
       <div className="mx-auto w-full max-w-3xl text-center pointer-events-auto">
@@ -38,6 +45,8 @@ export default function ChatInput({ theme }: { theme: string }) {
               placeholder="Type your message here..."
               className="w-full outline-none resize-none text-base leading-6 text-foreground outline-none placeholder:text-secondary-foreground/60 disabled:opacity-0"
               style={{ height: '48px' }}
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
             />
 
             <div className="mt-2 flex items-center justify-between">
@@ -68,6 +77,7 @@ export default function ChatInput({ theme }: { theme: string }) {
               <div className="flex items-center space-x-2">
 
 
+              <HoldTooltip tooltip="Message requires text" position="top" theme={theme}>
                 <button
                   type="submit"
                   disabled
@@ -75,6 +85,7 @@ export default function ChatInput({ theme }: { theme: string }) {
                 >
                   <ArrowUpIcon className="h-5 w-5" />
                 </button>
+              </HoldTooltip>
               </div>
             </div>
           </form>
