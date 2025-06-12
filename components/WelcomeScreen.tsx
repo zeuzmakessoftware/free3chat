@@ -65,20 +65,20 @@ export default function WelcomeScreen({ theme, setPrompt }: WelcomeScreenProps) 
                 onClick={() => setActiveTab(key as keyof typeof options)}
                 className={`
                   flex items-center gap-2
-                  px-6 py-3
+                  px-5 py-2
                   sm:rounded-[40px] rounded-[15px]
-                  border !border-white/10
+                  border ${theme === 'dark' ? 'border-white/10' : '!border-pink-500/20'}
                   max-sm:w-16 max-sm:h-16 max-sm:p-0 max-sm:justify-center max-sm:flex-col
                   transition-all
                   ${
                     activeTab === key
-                      ? 'bg-secondary/70 opacity-100'
-                      : 'bg-secondary/50 opacity-80 hover:bg-secondary/70 hover:opacity-100'
+                      ? `${theme === 'dark' ? 'bg-pink-800/40 opacity-100 hover:bg-pink-700/50 border-pink-500/20' : 'text-white bg-pink-800/80 opacity-100 hover:bg-pink-700/50'}`
+                      : `${theme === 'dark' ? 'bg-indigo-300/5 opacity-80 hover:bg-indigo-300/10 hover:opacity-100' : 'bg-pink-300/20 opacity-80 hover:bg-pink-200 hover:opacity-100'}`
                   }
                 `}
               >
                 <Icon className="max-sm:block max-sm:h-6 max-sm:w-6" />
-                <span className="font-semibold max-sm:text-xs">{key}</span>
+                <span className="font-semibold text-[14px]">{key}</span>
               </button>
             ))}
           </div>
@@ -86,7 +86,7 @@ export default function WelcomeScreen({ theme, setPrompt }: WelcomeScreenProps) 
           <div className="flex flex-col text-foreground">
             {questionsToShow.map((q, i) => (
               <div key={i} className="flex items-start gap-2 border-b border-secondary/40 py-1 first:border-t first:border-secondary/40">
-                <button onClick={() => setPrompt(q)} className="w-full rounded-md py-2 text-left text-secondary-foreground hover:bg-white/10 sm:px-3">
+                <button onClick={() => setPrompt(q)} className={`w-full rounded-md py-2 text-left text-secondary-foreground ${theme === 'dark' ? 'hover:bg-purple-300/5' : 'hover:bg-pink-200/50'} sm:px-3`}>
                   <span className="opacity-80">{q}</span>
                 </button>
               </div>

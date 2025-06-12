@@ -15,9 +15,10 @@ interface ChatInputProps {
   isLoading: boolean;
   onSend: () => void;
   firstPrompt: boolean;
+  sidebarState: 'expanded' | 'collapsed';
 }
 
-export default function ChatInput({ theme, prompt, setPrompt, isLoading, onSend, firstPrompt }: ChatInputProps) {
+export default function ChatInput({ theme, prompt, setPrompt, isLoading, onSend, firstPrompt, sidebarState }: ChatInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
   const handleSubmit = (e: React.FormEvent) => {
@@ -67,11 +68,11 @@ export default function ChatInput({ theme, prompt, setPrompt, isLoading, onSend,
         </div>
 
         <div
-          className={`mt-2 rounded-t-[20px] border-reflect ${theme === 'dark' ? 'bg-[#251f2a]' : 'bg-[#f5d5f5]'} p-2 pb-0 backdrop-blur-lg`}
+          className={`mt-2 rounded-t-[20px] border-reflect ${theme === 'dark' ? 'bg-[#251f2a]' : 'bg-[#f5d5f5]'} p-2 ${sidebarState === 'expanded' ? 'pb-4' : 'pb-0'} backdrop-blur-lg`}
         >
           <form
             onSubmit={handleSubmit}
-            className={`relative flex flex-col items-stretch gap-2 rounded-t-xl border border-b-0 ${theme === 'dark' ? '!border-white/10 bg-[#2c2333]' : '!border-white/70 bg-[#fff0ff]'} px-3 pt-3 pb-[env(safe-area-inset-bottom)] text-secondary-foreground sm:max-w-3xl h-[7.5rem] max-sm:h-[8.3rem]`}
+            className={`relative flex flex-col items-stretch gap-2 rounded-t-xl border border-b-0 ${theme === 'dark' ? '!border-white/10 bg-[#2c2333]' : '!border-white/70 bg-[#fff0ff]'} px-3 pt-3 pb-[env(safe-area-inset-bottom)] text-secondary-foreground sm:max-w-3xl h-[7.2rem] max-sm:h-[8.0rem]`}
           >
             <textarea
               ref={textareaRef}
@@ -99,7 +100,7 @@ export default function ChatInput({ theme, prompt, setPrompt, isLoading, onSend,
                 </button>
                 <button
                   type="button"
-                  className="flex items-center gap-2 rounded-2xl px-2 py-2 border !border-white/10 bg-black/10 hover:bg-black/20 disabled:text-secondary/40 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 rounded-2xl px-2 py-1.5 border !border-white/10 hover:bg-black/20 disabled:text-secondary/40 disabled:cursor-not-allowed"
                 >
                   <GlobeIcon className="h-4 w-4" />
                   <span className="max-sm:hidden text-xs">Search</span>
@@ -107,7 +108,7 @@ export default function ChatInput({ theme, prompt, setPrompt, isLoading, onSend,
 
                 <button
                   type="button"
-                  className="px-2 py-2 border rounded-full !border-white/10 bg-black/10 hover:bg-black/20 hover:bg-secondary/10 disabled:text-secondary/40 disabled:cursor-not-allowed"
+                  className="px-1.5 py-1.5 border rounded-full !border-white/10 hover:bg-black/20 disabled:text-secondary/40 disabled:cursor-not-allowed"
                 >
                   <PaperclipIcon className="h-4 w-4" />
                 </button>

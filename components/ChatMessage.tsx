@@ -30,17 +30,17 @@ const useCopyToClipboard = () => {
 };
 
 const ActionButtons = ({ onCopy, onRetry, onEdit, isUser, copied }: { onCopy: () => void; onRetry: () => void; onEdit?: () => void; isUser: boolean; copied: boolean }) => (
-  <div className="absolute -bottom-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-    <button onClick={onCopy} className="p-1 rounded hover:bg-black/10 dark:hover:bg-white/10">
-      {copied ? <CheckIcon className="h-4 w-4 text-green-500" /> : <CopyIcon className="h-4 w-4" />}
+  <div className="absolute -bottom-8 right-2 flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+    <button onClick={onRetry} className="p-1 rounded hover:bg-black/10 dark:hover:bg-white/10">
+      <RefreshCwIcon className="h-4 w-4" />
     </button>
     {isUser && onEdit && (
       <button onClick={onEdit} className="p-1 rounded hover:bg-black/10 dark:hover:bg-white/10">
         <EditIcon className="h-4 w-4" />
       </button>
     )}
-    <button onClick={onRetry} className="p-1 rounded hover:bg-black/10 dark:hover:bg-white/10">
-      <RefreshCwIcon className="h-4 w-4" />
+    <button onClick={onCopy} className="p-1 rounded hover:bg-black/10 dark:hover:bg-white/10">
+      {copied ? <CheckIcon className="h-4 w-4 text-green-500" /> : <CopyIcon className="h-4 w-4" />}
     </button>
   </div>
 );
@@ -89,7 +89,7 @@ export function AIMessage({ message, theme, onRetry, isLoading }: AIMessageProps
 
   return (
     <div className="group relative">
-      <div className="p-4 rounded-lg text-white opacity-90">
+      <div className="p-4 rounded-lg my-12 text-white opacity-90">
         <div className="prose prose-sm dark:prose-invert max-w-none !text-white break-words">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
