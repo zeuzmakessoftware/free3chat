@@ -72,7 +72,7 @@ export function UserMessage({ message, theme, onRetry, onEdit }: UserMessageProp
             rows={1}
           />
         ) : (
-          <p className="whitespace-pre-wrap">{message.content}</p>
+          <p className="whitespace-pre-wrap break-words">{message.content}</p>
         )}
       </div>
       {!isEditing && <ActionButtons onCopy={() => copy(message.content)} onRetry={onRetry} onEdit={() => setIsEditing(true)} isUser={true} copied={copied} />}
@@ -90,7 +90,7 @@ export function AIMessage({ message, theme, onRetry, isLoading }: AIMessageProps
   return (
     <div className="group relative">
       <div className="p-4 rounded-lg text-white opacity-90">
-        <div className="prose prose-sm dark:prose-invert max-w-none !text-white">
+        <div className="prose prose-sm dark:prose-invert max-w-none !text-white break-words">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{

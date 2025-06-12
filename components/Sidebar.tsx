@@ -13,7 +13,7 @@ export default function Sidebar({ sidebarState, theme }: SidebarProps) {
       role="complementary"
       aria-label="Sidebar"
       className={`fixed top-0 left-0 h-full bg-gradient-to-t ${theme === 'dark' ? 'from-[#11040E] to-[#1C151A]' : 'from-[#F2E1F4] to-[#F2E1F4]'} dark:bg-gray-900 border-gray-200 dark:border-gray-700 shadow-lg transition-width duration-300 ease-in-out ${
-        isExpanded ? 'w-64' : 'w-16'
+        isExpanded ? 'w-64' : 'w-0'
       } overflow-visible flex flex-col z-10`}
     >
       <header className="flex items-center justify-center px-4 py-4 border-gray-200 dark:border-gray-700">

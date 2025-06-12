@@ -49,14 +49,14 @@ export default function Page() {
       </div>
 
       <div
-        className={`flex-1 transition-all duration-300 relative ${
+        className={`flex-1 flex flex-col transition-all duration-300 relative ${
           sidebarState === "expanded" ? "ml-64" : ""
         }`}
       >
         <div className="relative">
           <SidebarTrigger onToggle={toggleSidebar} sidebarState={sidebarState} theme={theme} />
         </div>
-        <div className="relative">
+        <div className="relative flex-1 min-h-0">
           <ChatArea onToggleTheme={toggleTheme} theme={theme} sidebarState={sidebarState} firstPrompt={firstPrompt} setFirstPrompt={setFirstPrompt} />
         </div>
       </div>

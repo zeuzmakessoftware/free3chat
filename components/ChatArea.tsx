@@ -131,8 +131,8 @@ export default function ChatArea({ onToggleTheme, theme, sidebarState, firstProm
   const showWelcome = messages.length === 0;
   
   return (
-    <main className="firefox-scrollbar-margin-fix min-h-pwa relative flex w-full flex-1 flex-col overflow-hidden transition-[width,height]">
-      <div className={`absolute bottom-0 ${sidebarState === 'expanded' ? 'top-4' : 'top-0'} w-full overflow-hidden border-l border-t border-chat-border bg-chat-background bg-fixed pb-[140px] transition-all ease-snappy max-sm:border-none sm:translate-y-3.5 ${sidebarState === 'expanded' ? 'sm:rounded-tl-xl' : ''}`}>
+    <main className="firefox-scrollbar-margin-fix relative flex w-full h-full flex-col mt-4 overflow-hidden transition-[width,height]">
+      <div className={`absolute bottom-0 ${sidebarState === 'expanded' ? 'top-0' : 'top-0'} w-full overflow-hidden border-l border-t border-chat-border bg-chat-background bg-fixed pb-[140px] transition-all ease-snappy max-sm:border-none sm:translate-y-3.5 ${sidebarState === 'expanded' ? 'sm:rounded-tl-xl' : ''}`}>
         <div className="bg-noise absolute inset-0 -top-3.5 bg-fixed transition-transform ease-snappy [background-position:right_bottom]"></div>
       </div>
 
@@ -152,14 +152,14 @@ export default function ChatArea({ onToggleTheme, theme, sidebarState, firstProm
         />
       </div>
 
-      <div ref={scrollRef} onScroll={handleScroll} className="absolute inset-0 overflow-y-scroll sm:pt-3.5" style={{ paddingBottom: '144px', scrollbarGutter: 'stable both-edges' }}>
+      <div ref={scrollRef} onScroll={handleScroll} className="absolute inset-0 overflow-y-scroll overflow-x-hidden sm:pt-3.5" style={{ paddingBottom: '144px', scrollbarGutter: 'stable both-edges' }}>
         <TopRightControls onToggleTheme={onToggleTheme} sidebarState={sidebarState} theme={theme} />
         
         <div role="log" aria-label="Chat messages" aria-live="polite" className="px-4">
           {showWelcome ? (
             <WelcomeScreen theme={theme} setPrompt={setInput} />
           ) : (
-            <div className="mx-auto max-w-3xl space-y-6">
+            <div className="mx-auto max-w-3xl space-y-6 mb-32">
               {messages.map((msg, index) => 
                 msg.role === 'user' ? (
                   <UserMessage key={msg.id} message={msg} theme={theme} onRetry={() => handleRetry(index)} onEdit={(messageId, newContent) => handleEdit(messageId, newContent)} />
