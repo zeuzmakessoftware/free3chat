@@ -23,11 +23,11 @@ export default function ChatInput({ theme, prompt, setPrompt }: ChatInputProps) 
             } backdrop-blur-md`}
           >
             Make sure you agree to our{' '}
-            <a href="/terms-of-service" className="underline font-semibold">
+            <a href="/terms-of-service" className="!underline font-semibold">
               Terms
             </a>{' '}
             and our{' '}
-            <a href="/privacy-policy" className="underline font-semibold">
+            <a href="/privacy-policy" className="!underline font-semibold">
               Privacy Policy
             </a>
           </div>

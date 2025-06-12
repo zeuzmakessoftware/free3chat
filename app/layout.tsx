@@ -29,8 +29,8 @@ const proximaNova = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Open T3.chat",
-  description: "Open T3.chat",
+  title: "Open Source T3.chat",
+  description: "Open Source T3.chat",
 };
 
 export default function RootLayout({
