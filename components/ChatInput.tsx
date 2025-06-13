@@ -8,9 +8,10 @@ import {
 } from "@/components/Icons";
 import ModelPickerModal, { Model } from "./ModelPickerModal";
 import { Gemini as GeminiIcon, OpenAI as OpenAIIcon, Claude as ClaudeIcon, Meta as MetaIcon, DeepSeek as DeepSeekIcon, Grok as GrokIcon, Qwen as QwenIcon } from "@lobehub/icons";
+import { motion } from "framer-motion";
 
 interface ChatInputProps {
-  theme: "light" | "dark";
+  theme: string;
   prompt: string;
   setPrompt: (prompt: string) => void;
   isLoading: boolean;
@@ -101,7 +102,7 @@ export default function ChatInput({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(e as any);
+      handleSubmit(e as unknown as React.FormEvent);
     }
   };
 
@@ -173,12 +174,6 @@ export default function ChatInput({
                       setActiveModel(m);
                       setShowModelModal(false);
                     }}
-                    onToggleFavorite={(m) => {
-                      const newModels = models.map(model =>
-                        model.id === m.id ? { ...model, favorite: !m.favorite } : model
-                      );
-                      console.log(`Toggled favorite for ${m.name}`, newModels.find(model => model.id === m.id));
-                    }}
                   />
                 </div>
 
@@ -206,7 +201,7 @@ export default function ChatInput({
                 </button>
 
                 {showUpgradeModal && (
-                  <div className={`absolute bottom-full mb-2 left-30 w-72 border ${theme === "dark" ? "bg-[#15000a] border-!pink-700/70" : "bg-white border-pink-400/30"} p-4 rounded-lg shadow-md text-center z-10`}>
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.2 }}  className={`absolute bottom-full mb-2 left-30 w-72 border ${theme === "dark" ? "bg-[#15000a] border-!pink-700/70" : "bg-white border-pink-400/30"} p-4 rounded-lg shadow-md text-center z-10`}>
                     <p className="text-md font-semibold mb-1 text-left opacity-90">Upgrade to Pro</p>
                     <p className="text-sm mb-2 text-left opacity-80">Get access to web search and more features with Pro</p>
                     <button
@@ -217,7 +212,7 @@ export default function ChatInput({
                     >
                       Go To T3.chat
                     </button>
-                  </div>
+                  </motion.div>
                 )}
               </div>
 

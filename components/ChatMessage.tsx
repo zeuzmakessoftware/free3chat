@@ -50,11 +50,6 @@ export function UserMessage({ message, theme, onRetry, onEdit }: UserMessageProp
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(message.content);
 
-  const handleSave = () => {
-    onEdit(message.id, editedContent);
-    setIsEditing(false);
-  };
-
   return (
     <div className="group relative my-12 flex justify-end">
       <div className={`p-4 max-w-xs rounded-lg ${theme === 'dark' ? 'bg-white/5 text-white' : 'bg-pink-400/10 text-black'}`}>
@@ -97,18 +92,18 @@ export function AIMessage({ message, theme, onRetry, isLoading }: AIMessageProps
               code: (props) => (
                 <CodeBlock {...props} theme={theme} onRetry={onRetry} />
               ),
-              p: ({node, ...props}) => <p className={`${theme === 'dark' ? '!text-white' : '!text-black'}`} {...props} />,
-              h1: ({node, ...props}) => <h1 className={`${theme === 'dark' ? '!text-white' : '!text-black'}`} {...props} />,
-              h2: ({node, ...props}) => <h2 className={`${theme === 'dark' ? '!text-white' : '!text-black'}`} {...props} />,
-              h3: ({node, ...props}) => <h3 className={`${theme === 'dark' ? '!text-white' : '!text-black'}`} {...props} />,
-              h4: ({node, ...props}) => <h4 className={`${theme === 'dark' ? '!text-white' : '!text-black'}`} {...props} />,
-              h5: ({node, ...props}) => <h5 className={`${theme === 'dark' ? '!text-white' : '!text-black'}`} {...props} />,
-              h6: ({node, ...props}) => <h6 className={`${theme === 'dark' ? '!text-white' : '!text-black'}`} {...props} />,
-              li: ({node, ...props}) => <li className={`${theme === 'dark' ? '!text-white' : '!text-black'}`} {...props} />,
-              a: ({node, ...props}) => <a className={`${theme === 'dark' ? '!text-white' : '!text-black'}`} {...props} />,
-              strong: ({node, ...props}) => <strong className={`${theme === 'dark' ? '!text-white' : '!text-black'}`} {...props} />,
-              span: ({node, ...props}) => <span className={`${theme === 'dark' ? '!text-white' : '!text-black'}`} {...props} />,
-              pre: ({node, ...props}) => <pre className={`${theme === 'dark' ? '!bg-transparent p-0 m-0' : '!bg-transparent p-0 m-0'}`} {...props} />,
+              p: ({...props}) => <p className={`${theme === 'dark' ? '!text-white' : '!text-black'}`} {...props} />,
+              h1: ({...props}) => <h1 className={`${theme === 'dark' ? '!text-white' : '!text-black'}`} {...props} />,
+              h2: ({...props}) => <h2 className={`${theme === 'dark' ? '!text-white' : '!text-black'}`} {...props} />,
+              h3: ({...props}) => <h3 className={`${theme === 'dark' ? '!text-white' : '!text-black'}`} {...props} />,
+              h4: ({...props}) => <h4 className={`${theme === 'dark' ? '!text-white' : '!text-black'}`} {...props} />,
+              h5: ({...props}) => <h5 className={`${theme === 'dark' ? '!text-white' : '!text-black'}`} {...props} />,
+              h6: ({...props}) => <h6 className={`${theme === 'dark' ? '!text-white' : '!text-black'}`} {...props} />,
+              li: ({...props}) => <li className={`${theme === 'dark' ? '!text-white' : '!text-black'}`} {...props} />,
+              a: ({...props}) => <a className={`${theme === 'dark' ? '!text-white' : '!text-black'}`} {...props} />,
+              strong: ({...props}) => <strong className={`${theme === 'dark' ? '!text-white' : '!text-black'}`} {...props} />,
+              span: ({...props}) => <span className={`${theme === 'dark' ? '!text-white' : '!text-black'}`} {...props} />,
+              pre: ({...props}) => <pre className={`${theme === 'dark' ? '!bg-transparent p-0 m-0' : '!bg-transparent p-0 m-0'}`} {...props} />,
             }}
           >
             {message.content}

@@ -3,6 +3,7 @@
 import { ChevronUp, DiamondIcon, FilterIcon, InfoIcon, SearchIcon, ChevronDown, EyeIcon, GlobeIcon, FileTextIcon, BrainIcon, ImageIcon } from "lucide-react";
 import { useState, useMemo, FC, SVGProps, ComponentType, useEffect, useRef } from "react";
 import HoldTooltip from "@/components/HoldTooltip";
+import { motion } from "framer-motion";
 
 const capabilityIcons: Record<string, FC<SVGProps<SVGSVGElement>>> = {
     vision: EyeIcon,
@@ -23,7 +24,7 @@ const capabilityStyles: Record<string, { bg: string; text: string }> = {
 export interface Model {
   id?: string;
   name: string;
-  logo: ComponentType<any>;
+  logo: ComponentType<SVGProps<SVGSVGElement>>;
   info: string;
   capabilities: string[];
   favorite: boolean;
@@ -34,14 +35,13 @@ export interface Model {
 interface ModelPickerModalProps {
   models: Model[];
   current: Model;
-  theme: "light" | "dark";
+  theme: string;
   isOpen: boolean;
   onClose: () => void;
   onSelect: (model: Model) => void;
-  onToggleFavorite: (model: Model) => void;
 }
 
-const CapabilityBadges = ({ capabilities, theme }: { capabilities: string[]; theme: "light" | "dark" }) => (
+const CapabilityBadges = ({ capabilities, theme }: { capabilities: string[]; theme: string }) => (
     <>
         {capabilities.map((cap) => {
             const Icon = capabilityIcons[cap];
@@ -66,7 +66,7 @@ const ModelItem = ({
 }: {
     model: Model;
     view: 'list' | 'grid';
-    theme: "light" | "dark";
+    theme: string;
     isCurrent: boolean;
     onSelectModel: () => void;
 }) => {
@@ -111,7 +111,7 @@ const ModelItem = ({
     );
 };
 
-const SearchInput = ({ searchQuery, setSearchQuery, theme }: { searchQuery: string; setSearchQuery: (query: string) => void; theme: "light" | "dark" }) => (
+const SearchInput = ({ searchQuery, setSearchQuery, theme }: { searchQuery: string; setSearchQuery: (query: string) => void; theme: string }) => (
     <div className={`flex items-center border-b py-2 ${theme === "dark" ? "!border-white/10" : "!border-pink-400/30"}`}>
         <SearchIcon className={`w-3 h-3 ${theme === "dark" ? "!text-white/60" : "!text-pink-400/60"}`} />
         <input
@@ -123,7 +123,7 @@ const SearchInput = ({ searchQuery, setSearchQuery, theme }: { searchQuery: stri
     </div>
 );
 
-const UpgradeCard = ({ theme }: { theme: "light" | "dark" }) => (
+const UpgradeCard = ({ theme }: { theme: string }) => (
     <div className={`p-4 my-2 rounded-lg border !border-pink-400/30 ${theme === "dark" ? "bg-[#15000a]" : "!bg-gradient-to-b from-pink-200 to-white"}`}>
         <h2 className={`text-left mb-2 !font-semibold !text-lg ${theme === "dark" ? "!text-white" : "!text-pink-800"}`}>Unlock all models + higher limits</h2>
         <div className="flex justify-between">
@@ -133,8 +133,8 @@ const UpgradeCard = ({ theme }: { theme: "light" | "dark" }) => (
     </div>
 );
 
-const FilterMenu = ({ selectedFilters, setSelectedFilters, theme }: { selectedFilters: string[]; setSelectedFilters: (filters: string[]) => void; theme: "light" | "dark" }) => {
-    const filterOptions: Record<string, { text: string; Icon: FC<any> }> = {
+const FilterMenu = ({ selectedFilters, setSelectedFilters, theme }: { selectedFilters: string[]; setSelectedFilters: (filters: string[]) => void; theme: string }) => {
+    const filterOptions: Record<string, { text: string; Icon: FC<SVGProps<SVGSVGElement>> }> = {
         'vision': { text: "Vision", Icon: EyeIcon },
         'web': { text: "Web Browsing", Icon: GlobeIcon },
         'pdf': { text: "PDF Analysis", Icon: FileTextIcon },
@@ -180,7 +180,7 @@ const ModalFooter = ({ favoriteMode, setFavoriteMode, isFilterOpen, setIsFilterO
     setIsFilterOpen: (isOpen: boolean) => void;
     selectedFilters: string[];
     setSelectedFilters: (filters: string[]) => void;
-    theme: "light" | "dark";
+    theme: string;
 }) => (
     <div className="flex items-center justify-between border-t !border-pink-400/30 pt-2">
         <button onClick={() => setFavoriteMode(!favoriteMode)} className={`flex items-center justify-between gap-2 h-10 p-2 rounded-lg ${theme === "dark" ? "hover:!bg-white/10" : "hover:!bg-pink-100/50"}`}>
@@ -206,7 +206,7 @@ const ModelGridSection = ({
 }: {
     title: string;
     models: Model[];
-    theme: "light" | "dark";
+    theme: string;
     currentModelName: string;
     onSelectModel: (model: Model) => void;
 }) => {
@@ -237,7 +237,6 @@ export default function ModelPickerModal({
   isOpen,
   onClose,
   onSelect,
-  onToggleFavorite,
 }: ModelPickerModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -279,7 +278,7 @@ export default function ModelPickerModal({
 
     if (favoriteMode) {
         return (
-            <div ref={modalRef} className={`absolute bottom-full left-0 mb-2 z-[9999] pointer-events-auto`}>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.2 }} ref={modalRef} className={`absolute bottom-full left-0 mb-2 z-[9999] pointer-events-auto`}>
                 <div className={`w-[420px] px-4 py-2 rounded-lg ${theme === "dark" ? "bg-[#100A0E] text-white" : "bg-white text-black"} border ${theme === "dark" ? "border-neutral-700" : "border-neutral-300"} shadow-2xl pointer-events-auto`} onClick={(e) => e.stopPropagation()}>
                     <SearchInput searchQuery={searchQuery} setSearchQuery={setSearchQuery} theme={theme} />
                     <UpgradeCard theme={theme} />
@@ -298,12 +297,12 @@ export default function ModelPickerModal({
                     </div>
                     <ModalFooter {...commonFooterProps} />
                 </div>
-            </div>
+            </motion.div>
         );
     }
 
     return (
-        <div ref={modalRef} className={`absolute bottom-full left-0 mb-2 z-[9999] pointer-events-auto`}>
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.2 }} ref={modalRef} className={`absolute bottom-full left-0 mb-2 z-[9999] pointer-events-auto`}>
              <div className={`w-[600px] px-4 py-2 rounded-lg ${theme === "dark" ? "!bg-[#100A0E] text-white" : "!bg-white text-black"} border ${theme === "dark" ? "border-neutral-700" : "border-neutral-300"} shadow-2xl flex flex-col pointer-events-auto`} onClick={(e) => e.stopPropagation()}>
                 <SearchInput searchQuery={searchQuery} setSearchQuery={setSearchQuery} theme={theme} />
                 <div className="overflow-y-auto h-[70vh] pr-1 flex-grow">
@@ -314,7 +313,6 @@ export default function ModelPickerModal({
                 </div>
                 <ModalFooter {...commonFooterProps} />
             </div>
-        </div>
+        </motion.div>
     );
 }
-

@@ -4,23 +4,37 @@ import WelcomeScreen from './WelcomeScreen';
 import ChatInput from './ChatInput';
 import TopRightCurve from '@/components/TopRightCurve';
 import { useEffect, useState, useRef } from 'react';
-import { Message } from '@/types';
-import { v4 as uuidv4 } from 'uuid';
+import { Message } from '@/lib/supabaseClient';
 import { AIMessage, UserMessage } from './ChatMessage';
 import { ChevronDownIcon } from './Icons';
 
 interface ChatAreaProps {
   onToggleTheme: () => void;
-  theme: "light" | "dark";
+  theme: string;
   sidebarState: 'expanded' | 'collapsed';
   firstPrompt: boolean;
   setFirstPrompt: (firstPrompt: boolean) => void;
+  messages?: Message[];
+  isLoading?: boolean;
+  chatId?: string;
+  anonymousId?: string;
+  onSendMessage?: (content: string) => Promise<void>;
+  onRetry?: (messageId: string) => Promise<void>;
+  onEdit?: (originalUserMessageId: string, newContent: string) => Promise<void>;
 }
 
-export default function ChatArea({ onToggleTheme, theme, sidebarState, firstPrompt, setFirstPrompt }: ChatAreaProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
+export default function ChatArea({ 
+  onToggleTheme, 
+  theme, 
+  sidebarState, 
+  firstPrompt, 
+  messages = [],
+  isLoading = false,
+  onSendMessage,
+  onRetry,
+  onEdit
+}: ChatAreaProps) {
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
   
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -42,90 +56,27 @@ export default function ChatArea({ onToggleTheme, theme, sidebarState, firstProm
     }
   };
   
-  const streamAndSetAiResponse = async (promptContent: string, aiMessageIdToUpdate: string) => {
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: promptContent }),
-      });
-
-      if (!response.body) {
-        throw new Error("Response body is null");
-      }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let streamedContent = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        
-        streamedContent += decoder.decode(value, { stream: true });
-        setMessages(prev => prev.map(msg => 
-          msg.id === aiMessageIdToUpdate ? { ...msg, content: streamedContent } : msg
-        ));
-      }
-    } catch (error) {
-      console.error('Fetch error:', error);
-      setMessages(prev => prev.map(msg => 
-        msg.id === aiMessageIdToUpdate ? { ...msg, content: 'Sorry, I encountered an error. Please try again.' } : msg
-      ));
-    } finally {
-      setIsLoading(false);
-      scrollToBottom();
+  const handleSend = async (content: string) => {
+    if (!content.trim() || isLoading) return;
+    setInput('');
+    
+    // If parent provided onSendMessage, use that instead
+    if (onSendMessage) {
+      await onSendMessage(content);
+      return;
     }
   };
-
-  const handleSend = async (messageContent: string) => {
-    if (!messageContent.trim()) return;
-
-    const userMessage: Message = { id: uuidv4(), role: 'user', content: messageContent };
-    const aiMessageId = uuidv4();
-    const newAiMessage: Message = { id: aiMessageId, role: 'model', content: '' };
-
-    setMessages(prev => [...prev, userMessage, newAiMessage]);
-    setInput('');
-    setFirstPrompt(true);
-    
-    await streamAndSetAiResponse(messageContent, aiMessageId);
+  
+  const handleRetryClick = async (messageId: string) => {
+    if (onRetry) {
+      await onRetry(messageId);
+    }
   };
   
-  const handleRetry = (index: number) => {
-    const userMessageContent = messages[index].content;
-    const messagesToRetry = messages.slice(0, index);
-    setMessages(messagesToRetry);
-    handleSend(userMessageContent);
-  };
-  
-  const handleEdit = async (originalUserMessageId: string, newContent: string) => {
-    if (!newContent.trim()) return;
-
-    const newAiMessageId = uuidv4();
-
-    setMessages(prevMessages => {
-      const userMessageIndex = prevMessages.findIndex(msg => msg.id === originalUserMessageId);
-      if (userMessageIndex === -1) {
-        console.warn(`Message with id ${originalUserMessageId} not found for editing.`);
-        return prevMessages; 
-      }
-
-      let updatedMessages = [...prevMessages];
-      updatedMessages[userMessageIndex] = { ...updatedMessages[userMessageIndex], content: newContent };
-
-      if (userMessageIndex + 1 < updatedMessages.length && updatedMessages[userMessageIndex + 1].role === 'model') {
-        updatedMessages.splice(userMessageIndex + 1, 1);
-      }
-      
-      const newAiPlaceholder: Message = { id: newAiMessageId, role: 'model', content: '' };
-      updatedMessages.splice(userMessageIndex + 1, 0, newAiPlaceholder);
-      
-      return updatedMessages;
-    });
-
-    await streamAndSetAiResponse(newContent, newAiMessageId);
+  const handleEditClick = async (messageId: string, newContent: string) => {
+    if (onEdit) {
+      await onEdit(messageId, newContent);
+    }
   };
 
   const showWelcome = messages.length === 0;
@@ -163,9 +114,9 @@ export default function ChatArea({ onToggleTheme, theme, sidebarState, firstProm
             <div className="mx-auto max-w-3xl space-y-6 mb-32">
               {messages.map((msg, index) => 
                 msg.role === 'user' ? (
-                  <UserMessage key={msg.id} message={msg} theme={theme} onRetry={() => handleRetry(index)} onEdit={(messageId, newContent) => handleEdit(messageId, newContent)} />
+                  <UserMessage key={msg.id} message={msg} theme={theme} onRetry={() => handleRetryClick(msg.id)} onEdit={(messageId, newContent) => handleEditClick(messageId, newContent)} />
                 ) : (
-                  <AIMessage key={msg.id} message={msg} theme={theme} onRetry={() => handleRetry(index - 1)} isLoading={isLoading && index === messages.length - 1} />
+                  <AIMessage key={msg.id} message={msg} theme={theme} onRetry={() => index > 0 && handleRetryClick(messages[index - 1].id)} isLoading={isLoading && index === messages.length - 1} />
                 )
               )}
             </div>

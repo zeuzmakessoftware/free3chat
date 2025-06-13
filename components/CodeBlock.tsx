@@ -5,7 +5,7 @@ import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { CopyIcon, CheckIcon, RefreshCwIcon, WrapTextIcon } from './Icons';
 
 interface CodeBlockProps {
-  node?: any;
+  node?: unknown;
   inline?: boolean;
   className?: string;
   children?: React.ReactNode;
@@ -14,7 +14,6 @@ interface CodeBlockProps {
 }
 
 export const CodeBlock = ({
-  node,
   inline,
   className,
   children,
