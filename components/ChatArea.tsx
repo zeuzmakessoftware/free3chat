@@ -11,7 +11,7 @@ import { ChevronDownIcon } from './Icons';
 
 interface ChatAreaProps {
   onToggleTheme: () => void;
-  theme: string;
+  theme: "light" | "dark";
   sidebarState: 'expanded' | 'collapsed';
   firstPrompt: boolean;
   setFirstPrompt: (firstPrompt: boolean) => void;

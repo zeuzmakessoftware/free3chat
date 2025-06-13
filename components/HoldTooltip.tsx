@@ -95,7 +95,7 @@ export default function HoldTooltip({
         }}
         className={`${theme === 'dark' ? 'bg-black' : 'bg-white'} rounded px-3 py-2 text-[11px] shadow-lg pointer-events-none whitespace-nowrap`}
       >
-        {tooltip && <div>{tooltip}</div>}
+        {tooltip && <div className={`${theme === 'dark' ? 'text-white' : 'text-black'}`}>{tooltip}</div>}
         {shortcut && (
           <div className={cn("text-[10px] text-white rounded flex gap-1", tooltip ? "mt-1" : "")}>
             {Array.isArray(shortcut) ? 
