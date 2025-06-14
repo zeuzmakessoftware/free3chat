@@ -3,6 +3,7 @@
 import TopRightControls from '@/components/TopRightControls';
 import WelcomeScreen from './WelcomeScreen';
 import ChatInput from './ChatInput';
+import type { Model } from '@/lib/models';
 import TopRightCurve from '@/components/TopRightCurve';
 import { useEffect, useState, useRef } from 'react';
 import { Message } from '@/types';
@@ -21,6 +22,9 @@ interface ChatAreaProps {
   onRetry?: (messageId: string) => Promise<void>;
   onEdit?: (originalUserMessageId: string, newContent: string) => Promise<void>;
   isHome?: boolean;
+  // Add activeModel and onModelSelect to props
+  activeModel?: Model;
+  onModelSelect?: (model: Model) => void;
 }
 
 export default function ChatArea({ 
@@ -35,6 +39,8 @@ export default function ChatArea({
   onRetry,
   onEdit,
   isHome,
+  activeModel,
+  onModelSelect,
 }: ChatAreaProps) {
   const [input, setInput] = useState('');
   const [showScrollButton, setShowScrollButton] = useState(false);
@@ -46,11 +52,10 @@ export default function ChatArea({
   };
 
   useEffect(() => {
-      // Use 'auto' for initial load to jump to bottom instantly
       if(messages.length > 0) {
         scrollToBottom('auto');
       }
-  }, []); // Run only once on initial mount
+  }, []); 
 
   useEffect(() => {
     if (!isLoading) {
@@ -84,14 +89,20 @@ export default function ChatArea({
             <TopRightCurve theme={theme} />
           )}
         </div>
-        <ChatInput 
-          theme={theme} 
-          prompt={input} 
-          setPrompt={setInput}
-          isLoading={isLoading}
-          onSend={() => handleSend(input)}
-          firstPrompt={firstPrompt}
-          sidebarState={sidebarState}        />
+        {/* Pass down activeModel and onModelSelect */}
+        {activeModel && onModelSelect && (
+          <ChatInput 
+            theme={theme} 
+            prompt={input} 
+            setPrompt={setInput}
+            isLoading={isLoading}
+            onSend={() => handleSend(input)}
+            firstPrompt={firstPrompt}
+            sidebarState={sidebarState}
+            activeModel={activeModel}
+            onModelSelect={onModelSelect}
+          />
+        )}
       </div>
 
       <div ref={scrollRef} onScroll={handleScroll} className={`absolute inset-0 overflow-y-scroll overflow-x-hidden sm:pt-3.5 ${sidebarState === 'expanded' ? '' : 'mt-4'}`} style={{ paddingBottom: '144px', scrollbarGutter: 'stable both-edges' }}>
@@ -133,7 +144,6 @@ export default function ChatArea({
           </button>
         </div>
       )}
-
     </main>
   );
 }

@@ -1,9 +1,10 @@
 "use client"
 
 import { ChevronUp, DiamondIcon, FilterIcon, InfoIcon, SearchIcon, ChevronDown, EyeIcon, GlobeIcon, FileTextIcon, BrainIcon, ImageIcon } from "lucide-react";
-import { useState, useMemo, FC, SVGProps, ComponentType, useEffect, useRef } from "react";
+import { useState, useMemo, FC, SVGProps, useEffect, useRef } from "react";
 import HoldTooltip from "@/components/HoldTooltip";
 import { motion } from "framer-motion";
+import type { Model } from "@/lib/models";
 
 const capabilityIcons: Record<string, FC<SVGProps<SVGSVGElement>>> = {
     vision: EyeIcon,
@@ -20,17 +21,6 @@ const capabilityStyles: Record<string, { bg: string; text: string }> = {
     reasoning: { bg: "bg-purple-500/20", text: "text-purple-400" },
     imagegen: { bg: "bg-orange-500/20", text: "text-orange-400" },
 };
-
-export interface Model {
-  id?: string;
-  name: string;
-  logo: ComponentType<SVGProps<SVGSVGElement>>;
-  info: string;
-  capabilities: string[];
-  favorite: boolean;
-  premium: boolean;
-  active: boolean;
-}
 
 interface ModelPickerModalProps {
   models: Model[];

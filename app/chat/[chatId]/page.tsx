@@ -1,41 +1,27 @@
 "use client";
-
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, useParams } from "next/navigation";
 import { getAnonymousId } from "@/lib/utils/anonymousId";
 import Sidebar from "@/components/Sidebar";
 import SidebarTrigger from "@/components/SidebarTrigger";
 import ChatArea from "@/components/ChatArea";
+import { models, type Model } from "@/lib/models";
 import { Message } from "@/types";
-import { ClockIcon } from "@/components/Icons";
-
-const InitialLoadingSpinner = ({ theme }: { theme: string }) => (
-  <div className="flex h-full w-full items-center justify-center">
-    <div className="flex items-center space-x-2">
-      <ClockIcon className={`h-6 w-6 animate-spin ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`} />
-      <span className={`text-lg ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Loading chat...</span>
-    </div>
-  </div>
-);
-
 
 export default function ChatPage() {
   const router = useRouter();
-  const params = useParams();
   const searchParams = useSearchParams();
+  const params = useParams();
+  const chatId = params.chatId as string;
 
-  const [chatId, setChatId] = useState<string>(params.chatId as string);
   const [sidebarState, setSidebarState] = useState<"expanded" | "collapsed">("expanded");
   const [theme, setTheme] = useState("light");
-  const [anonymousId, setAnonymousId] = useState<string>('');
-  
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [pageStatus, setPageStatus] = useState<'pending' | 'loaded'>('pending');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [anonymousId, setAnonymousId] = useState<string>('');
+  const [activeModel, setActiveModel] = useState<Model | null>(null);
 
-  const isInitializing = useRef(false);
-  const titleGenerated = useRef(false);
+  const initialPromptHandled = useRef(false);
 
   useEffect(() => {
     const id = getAnonymousId();
@@ -45,9 +31,13 @@ export default function ChatPage() {
   useEffect(() => {
     const saved = localStorage.getItem("theme");
     const darkPref = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    if (saved) setTheme(saved);
-    else if (darkPref) setTheme("dark");
+    setTheme(saved || (darkPref ? "dark" : "light"));
   }, []);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    localStorage.setItem("theme", theme);
+  }, [theme]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -58,194 +48,127 @@ export default function ChatPage() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const fetchDataAndSendInitialPrompt = useCallback(async () => {
+    if (!chatId || !anonymousId) return;
+
+    setIsLoading(true);
+    try {
+      const chatDetailsRes = await fetch(`/api/chats?chatId=${chatId}&anonymousId=${anonymousId}`);
+      if (!chatDetailsRes.ok) throw new Error('Failed to fetch chat details');
+      const { chats } = await chatDetailsRes.json();
+      const currentChat = chats.find((c: any) => c.id === chatId);
+      
+      if (currentChat && currentChat.model_id) {
+        const modelForChat = models.find(m => m.id === currentChat.model_id) || models.find(m => m.active)!;
+        setActiveModel(modelForChat);
+      } else {
+        setActiveModel(models.find(m => m.active)!);
+      }
+
+      const messagesRes = await fetch(`/api/chats/${chatId}/messages?anonymousId=${anonymousId}`);
+      if (!messagesRes.ok) throw new Error('Failed to fetch messages');
+      const { messages: fetchedMessages } = await messagesRes.json();
+      setMessages(fetchedMessages);
+
+      const initialPrompt = searchParams.get('prompt');
+      if (initialPrompt && !initialPromptHandled.current) {
+        initialPromptHandled.current = true;
+        router.replace(`/chat/${chatId}`, { scroll: false });
+        await handleSendMessage(initialPrompt);
+      }
+    } catch (error) {
+      console.error("Error fetching chat data:", error);
+      router.push('/');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [chatId, anonymousId, searchParams, router]);
+
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    localStorage.setItem("theme", theme);
-  }, [theme]);
+    fetchDataAndSendInitialPrompt();
+  }, [fetchDataAndSendInitialPrompt]);
 
   const toggleSidebar = () => setSidebarState(s => s === "expanded" ? "collapsed" : "expanded");
   const toggleTheme = () => setTheme(t => t === "light" ? "dark" : "light");
 
-  const handleSendMessage = useCallback(async (content: string, targetChatId: string, messageHistory?: Message[]) => {
-    if (!content.trim() || !targetChatId) return;
+  const handleSendMessage = async (content: string) => {
+    if (!content.trim()) return;
+
     setIsLoading(true);
-    setError(null);
+    const tempUserMessageId = `temp-user-${Date.now()}`;
+    const userMessage: Message = { id: tempUserMessageId, chat_id: chatId, role: 'user', content, created_at: new Date().toISOString() };
+    const aiPlaceholderMessage: Message = { id: `temp-ai-${Date.now()}`, chat_id: chatId, role: 'model', content: '', created_at: new Date().toISOString() };
 
-    // Get the current messages state to work with
-    // Important: Use the messageHistory parameter if provided, otherwise use the current messages state
-    const currentMessages = messageHistory ? [...messageHistory] : [...messages];
-
-    const optimisticUserMessage: Message = {
-      id: `user-${Date.now()}`, chat_id: targetChatId, role: 'user', content: content, created_at: new Date().toISOString(),
-    };
-    const optimisticAiMessage: Message = {
-      id: `model-${Date.now()}`, chat_id: targetChatId, role: 'model', content: '', created_at: new Date().toISOString(),
-    };
-
-    // Update messages with optimistic updates
-    const updatedMessages = [...currentMessages, optimisticUserMessage, optimisticAiMessage];
-    setMessages(updatedMessages);
+    setMessages(prev => [...prev, userMessage, aiPlaceholderMessage]);
 
     try {
-      const msgResponse = await fetch(`/api/chats/${targetChatId}/messages?anonymousId=${anonymousId}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content }),
+      const createRes = await fetch(`/api/chats/${chatId}/messages?anonymousId=${anonymousId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content }),
       });
-      if (!msgResponse.ok) throw new Error('Failed to send message.');
-      const { aiMessage: realAiMessage } = await msgResponse.json();
+      const { userMessage: dbUserMessage, aiMessage: dbAiMessage } = await createRes.json();
 
-      // Update with real AI message ID - use a functional update to ensure we're working with the latest state
-      setMessages(prev => {
-        // Find the optimistic message in the current state
-        const optimisticIndex = prev.findIndex(m => m.id === optimisticAiMessage.id);
-        if (optimisticIndex === -1) return prev; // Safety check
-        
-        // Create a new array with all messages and replace the optimistic one
-        const updated = [...prev];
-        updated[optimisticIndex] = {...realAiMessage};
-        return updated;
-      });
-
-      const streamResponse = await fetch(`/api/chats/${targetChatId}/messages/${realAiMessage.id}/stream`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ anonymousId }),
-      });
-
-      if (!streamResponse.ok || !streamResponse.body) throw new Error('Failed to get streaming response.');
-      const reader = streamResponse.body.getReader();
-      const decoder = new TextDecoder();
+      setMessages(prev => prev.map(m => m.id === tempUserMessageId ? dbUserMessage : m.id === aiPlaceholderMessage.id ? dbAiMessage : m));
       
-      // Stream the response
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+      const streamRes = await fetch(`/api/chats/${chatId}/messages/${dbAiMessage.id}/stream`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ anonymousId }),
+      });
+
+      if (!streamRes.body) throw new Error("No response body");
+      const reader = streamRes.body.getReader();
+      const decoder = new TextDecoder();
+      let done = false;
+
+      while (!done) {
+        const { value, done: readerDone } = await reader.read();
+        done = readerDone;
         const chunk = decoder.decode(value, { stream: true });
-        
-        // Update messages with each chunk using a functional update to ensure we're working with the latest state
-        setMessages(prev => {
-          // Find the real AI message in the current state
-          const messageIndex = prev.findIndex(msg => msg.id === realAiMessage.id);
-          if (messageIndex === -1) return prev; // Safety check
-          
-          // Create a new array with all messages and update the content of the AI message
-          const updated = [...prev];
-          updated[messageIndex] = { 
-            ...updated[messageIndex], 
-            content: updated[messageIndex].content + chunk 
-          };
-          return updated;
-        });
+        setMessages(prev => prev.map(m => 
+          m.id === dbAiMessage.id ? { ...m, content: m.content + chunk } : m
+        ));
+      }
+      
+      const currentChat = (await (await fetch(`/api/chats?chatId=${chatId}&anonymousId=${anonymousId}`)).json()).chats[0];
+      if (currentChat.title === 'New Chat') {
+        fetch(`/api/chats/${chatId}/title`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ anonymousId }),
+        }).then(() => window.dispatchEvent(new CustomEvent('chats-updated')));
       }
 
-      if (!titleGenerated.current && currentMessages.length < 2) {
-        titleGenerated.current = true;
-        fetch(`/api/chats/${targetChatId}/title`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ anonymousId }),
-        }).then(() => window.dispatchEvent(new Event('chats-updated')));
-      }
-
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'An error occurred.');
+    } catch (error) {
+      console.error('Error sending message:', error);
+      setMessages(prev => prev.filter(m => m.id !== tempUserMessageId && m.id !== aiPlaceholderMessage.id));
     } finally {
       setIsLoading(false);
-      window.dispatchEvent(new Event('chats-updated'));
     }
-  }, [anonymousId, messages]); // Include messages in the dependency array
+  };
 
-  const handleRetry = useCallback(async (userMessageId: string) => {
-    // Find the message to retry
-    const messageIndex = messages.findIndex(m => m.id === userMessageId);
-    if (messageIndex === -1) return;
-    
-    // Get the content to retry and the history up to that point
-    const contentToRetry = messages[messageIndex].content;
-    const historyToRetry = [...messages.slice(0, messageIndex)];
-    
-    // Keep the history in state but add a loading indicator
-    setIsLoading(true);
-    
-    // Send the message with the history
-    await handleSendMessage(contentToRetry, chatId, historyToRetry);
-  }, [messages, handleSendMessage, chatId]);
+  const handleRetry = async (userMessageId: string) => {
+    const userMessageIndex = messages.findIndex(m => m.id === userMessageId);
+    if (userMessageIndex === -1) return;
 
-  const handleEdit = useCallback(async (userMessageId: string, newContent: string) => {
-    // Find the message to edit
-    const messageIndex = messages.findIndex(m => m.id === userMessageId);
-    if (messageIndex === -1) return;
-    
-    // Get the history up to that point
-    const historyToRetry = [...messages.slice(0, messageIndex)];
-    
-    // Keep the history in state but add a loading indicator
-    setIsLoading(true);
-    
-    // Send the edited message with the history
-    await handleSendMessage(newContent, chatId, historyToRetry);
-  }, [messages, handleSendMessage, chatId]);
+    const content = messages[userMessageIndex].content;
+    const conversationHistory = messages.slice(0, userMessageIndex + 1);
+    setMessages(conversationHistory);
+
+    await handleSendMessage(content);
+  };
   
-  const initializeChat = useCallback(async () => {
-    if (!anonymousId) return;
-    setPageStatus('pending');
+  const handleEdit = async (originalUserMessageId: string, newContent: string) => {
+      const userMessageIndex = messages.findIndex(m => m.id === originalUserMessageId);
+      if (userMessageIndex === -1) return;
 
-    if (chatId === 'new') {
-      const prompt = searchParams.get('prompt');
-      if (!prompt) { router.replace('/'); return; }
-      
-      try {
-        const res = await fetch('/api/chats', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ anonymousId }),
-        });
-        const { chat } = await res.json();
-        if (!chat || !chat.id) throw new Error('Failed to create chat.');
-        
-        setChatId(chat.id);
-        router.replace(`/chat/${chat.id}`, { scroll: false });
-        window.dispatchEvent(new Event('chats-updated'));
-        
-        setPageStatus('loaded');
-        await handleSendMessage(prompt, chat.id, []);
+      const conversationHistory = messages.slice(0, userMessageIndex);
+      setMessages(conversationHistory);
 
-      } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : 'An error occurred.');
-        setPageStatus('loaded');
-      }
-    } else {
-      try {
-        const res = await fetch(`/api/chats/${chatId}/messages?anonymousId=${anonymousId}`);
-        if (res.status === 404) { router.replace('/'); return; }
-        if (!res.ok) throw new Error('Failed to fetch messages.');
-        
-        const { messages: fetchedMessages } = await res.json();
-        setMessages(fetchedMessages || []);
-        if (fetchedMessages && fetchedMessages.length > 0) {
-            titleGenerated.current = true;
-        }
-        
-        // Check if there's a prompt parameter to process after loading existing messages
-        const prompt = searchParams.get('prompt');
-        if (prompt && fetchedMessages) {
-          // Wait a moment to ensure messages are rendered first
-          setTimeout(() => {
-            handleSendMessage(prompt, chatId, fetchedMessages);
-          }, 100);
-        }
-      } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : 'An error occurred.');
-      } finally {
-        setPageStatus('loaded');
-      }
-    }
-  }, [chatId, anonymousId, searchParams, router, handleSendMessage]);
+      await handleSendMessage(newContent);
+  };
 
-  useEffect(() => {
-    if (anonymousId && chatId && !isInitializing.current) {
-      isInitializing.current = true;
-      initializeChat();
-    }
-  }, [chatId, anonymousId, initializeChat]);
-  
-  useEffect(() => {
-    setChatId(params.chatId as string);
-    isInitializing.current = false;
-  }, [params.chatId]);
 
   return (
     <div className={`relative flex h-screen w-full ${theme === 'dark' ? 'bg-[#1C151A]' : 'bg-[#F2E1F4]'}`}>
@@ -254,7 +177,6 @@ export default function ChatPage() {
           sidebarState={sidebarState} 
           theme={theme} 
           currentChatId={chatId}
-          anonymousId={anonymousId}
         />
       </div>
 
@@ -263,25 +185,21 @@ export default function ChatPage() {
           <SidebarTrigger onToggle={toggleSidebar} sidebarState={sidebarState} theme={theme} />
         </div>
         <div className="relative flex-1 min-h-0">
-          {error && <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-red-500 text-white p-2 rounded-md z-50">{error}</div>}
-          
-          {pageStatus === 'pending' ? (
-            <InitialLoadingSpinner theme={theme} />
-          ) : (
-            <ChatArea 
-              onToggleTheme={toggleTheme} 
-              theme={theme} 
-              sidebarState={sidebarState} 
-              firstPrompt={false}
-              setFirstPrompt={() => {}}
-              messages={messages}
-              isLoading={isLoading} 
-              onSendMessage={(content) => handleSendMessage(content, chatId)}
-              onRetry={handleRetry}
-              onEdit={handleEdit}
-              isHome={false}
-            />
-          )}
+          <ChatArea 
+            onToggleTheme={toggleTheme} 
+            theme={theme} 
+            sidebarState={sidebarState} 
+            firstPrompt={messages.length === 0} 
+            setFirstPrompt={() => {}}
+            messages={messages}
+            isLoading={isLoading}
+            onSendMessage={handleSendMessage}
+            onRetry={handleRetry}
+            onEdit={handleEdit}
+            isHome={false}
+            activeModel={activeModel || undefined}
+            onModelSelect={() => {}}
+          />
         </div>
       </div>
     </div>

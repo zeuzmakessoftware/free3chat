@@ -6,6 +6,7 @@ import { getAnonymousId } from "@/lib/utils/anonymousId";
 import Sidebar from "@/components/Sidebar";
 import SidebarTrigger from "@/components/SidebarTrigger";
 import ChatArea from "@/components/ChatArea";
+import { models, type Model } from "@/lib/models";
 
 export default function Page() {
   const router = useRouter();
@@ -14,6 +15,8 @@ export default function Page() {
   const [firstPrompt, setFirstPrompt] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [anonymousId, setAnonymousId] = useState<string>('');
+  
+  const [activeModel, setActiveModel] = useState<Model>(() => models.find(m => m.active) || models[0]);
 
   useEffect(() => {
     const id = getAnonymousId();
@@ -53,24 +56,21 @@ export default function Page() {
   
   const toggleTheme = () => setTheme((t) => (t === "light" ? "dark" : "light"));
 
-  // This is the new, streamlined way to start a chat.
   const handleSend = async (messageContent: string) => {
     if (!messageContent.trim() || isLoading) return;
     
-    setIsLoading(true); // Visual feedback to prevent double-clicks
+    setIsLoading(true);
     
     try {
-      // Create a new chat first
       const res = await fetch('/api/chats', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ anonymousId }),
+        body: JSON.stringify({ anonymousId, modelId: activeModel.id }),
       });
       
       const { chat } = await res.json();
       if (!chat || !chat.id) throw new Error('Failed to create chat.');
       
-      // Then navigate to the new chat with the chat ID
       router.push(`/chat/${chat.id}?prompt=${encodeURIComponent(messageContent)}`);
     } catch (error) {
       console.error('Error creating chat:', error);
@@ -102,6 +102,8 @@ export default function Page() {
             isLoading={isLoading}
             onSendMessage={handleSend}
             isHome={true}
+            activeModel={activeModel}
+            onModelSelect={setActiveModel}
           />
         </div>
       </div>
