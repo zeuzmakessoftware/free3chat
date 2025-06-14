@@ -9,19 +9,43 @@ import { Message } from '@/types';
 
 export const runtime = 'nodejs';
 
-// Map frontend model slugs to backend provider and API model names
+interface GoogleStreamChunk {
+  text(): string;
+}
+
+interface GroqStreamChunk {
+  choices: Array<{ delta: { content?: string } }>;
+}
+
+interface GoogleHistoryItem {
+  role: 'model' | 'user';
+  parts: Array<{ text: string }>;
+}
+
+interface GroqHistoryItem {
+  role: 'assistant' | 'user';
+  content: string;
+}
+
+type ChatHistoryItem = GoogleHistoryItem | GroqHistoryItem;
+
 const modelMapping: Record<string, { provider: 'google' | 'groq'; name: string }> = {
-  'gemini-2-5-flash': { provider: 'google', name: 'gemini-1.5-flash' },
+  'gemini-2-5-flash': { provider: 'google', name: 'gemini-2.5-flash' },
   'llama-3-3-70b': { provider: 'groq', name: 'llama-3.3-70b-versatile' },
-  'llama-4-maverick': { provider: 'groq', name: 'llama4-maverick' }, // Using a plausible name
-  'qwen-qwq-32b': { provider: 'groq', name: 'qwen-qwq-32b' }, // Using a plausible name
-  'deepseek-r1-llama-distilled': { provider: 'groq', name: 'deepseek-r1-llama-distilled' }, // Using a plausible name
-  // Add other models here if they use different APIs
+  'llama-4-maverick': { provider: 'groq', name: 'llama4-maverick' },
+  'qwen-qwq-32b': { provider: 'groq', name: 'qwen-qwq-32b' },
+  'deepseek-r1-llama-distilled': { provider: 'groq', name: 'deepseek-r1-llama-distilled' },
 };
 const defaultModel = modelMapping['gemini-2-5-flash'];
 
 
-async function getChatHistory(chatId: string, provider: 'google' | 'groq'): Promise<any[]> {
+async function getChatHistory(chatId: string, provider: 'google'): Promise<GoogleHistoryItem[]>;
+async function getChatHistory(chatId: string, provider: 'groq'): Promise<GroqHistoryItem[]>;
+
+async function getChatHistory(
+  chatId: string,
+  provider: 'google' | 'groq'
+): Promise<ChatHistoryItem[]> {
   const { data, error } = await supabase
     .from('messages')
     .select('*')
@@ -30,27 +54,23 @@ async function getChatHistory(chatId: string, provider: 'google' | 'groq'): Prom
     .limit(20);
 
   if (error || !data) {
-    console.error("Error fetching chat history:", error);
+    console.error('Error fetching chat history:', error);
     return [];
   }
-  
-  const filteredMessages = data.filter((msg: Message) => msg.content);
+
+  const filtered = data.filter((m: Message) => m.content);
 
   if (provider === 'google') {
-    return filteredMessages.map((msg: Message) => ({
+    return filtered.map<GoogleHistoryItem>(msg => ({
       role: msg.role === 'model' ? 'model' : 'user',
       parts: [{ text: msg.content }],
     }));
-  }
-  
-  if (provider === 'groq') {
-    return filteredMessages.map((msg: Message) => ({
+  } else {
+    return filtered.map<GroqHistoryItem>(msg => ({
       role: msg.role === 'model' ? 'assistant' : 'user',
       content: msg.content,
     }));
   }
-
-  return [];
 }
 
 async function handleRequest(req: Request) {
@@ -63,7 +83,6 @@ async function handleRequest(req: Request) {
     
     const session = await getServerSession(authOptions);
     
-    // Fetch chat details, including the model_id
     let chatQuery = supabase.from('chats').select('id, model_id').eq('id', chatId);
     if (session?.user?.id) {
       chatQuery = chatQuery.eq('user_id', session.user.id);
@@ -78,7 +97,6 @@ async function handleRequest(req: Request) {
       return NextResponse.json({ error: 'Chat not found or unauthorized' }, { status: 404 });
     }
     
-    // Determine provider and model name from mapping
     const modelInfo = modelMapping[chat.model_id || ''] || defaultModel;
     const { provider, name: apiModelName } = modelInfo;
     
@@ -110,17 +128,23 @@ async function handleRequest(req: Request) {
         let fullResponse = '';
         const encoder = new TextEncoder();
         try {
-          for await (const chunk of apiStream) {
-            let chunkText = '';
-            if (provider === 'google') {
-                chunkText = (chunk as any).text();
-            } else if (provider === 'groq') {
-                chunkText = (chunk as any).choices[0]?.delta?.content || '';
-            }
-            
-            if (chunkText) {
+          if (provider === 'google') {
+            const googleStream = apiStream as AsyncIterable<GoogleStreamChunk>;
+            for await (const chunk of googleStream) {
+              const chunkText = chunk.text();
+              if (chunkText) {
                 fullResponse += chunkText;
                 controller.enqueue(encoder.encode(chunkText));
+              }
+            }
+          } else {
+            const groqStream = apiStream as AsyncIterable<GroqStreamChunk>;
+            for await (const chunk of groqStream) {
+              const chunkText = chunk.choices[0]?.delta?.content ?? '';
+              if (chunkText) {
+                fullResponse += chunkText;
+                controller.enqueue(encoder.encode(chunkText));
+              }
             }
           }
           

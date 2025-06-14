@@ -1,7 +1,7 @@
 // components/Sidebar.tsx
 'use client';
 
-import { SearchIcon, LogInIcon, ClockIcon, XIcon } from '@/components/Icons';
+import { SearchIcon, LogInIcon, XIcon } from '@/components/Icons';
 import HoldTooltip from './HoldTooltip';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -18,22 +18,6 @@ interface SidebarProps {
   anonymousId?: string;
 }
 
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffInMs = now.getTime() - date.getTime();
-  const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
-  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-
-  if (diffInMinutes < 1) return 'Just now';
-  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-  if (diffInHours < 24) return `${diffInHours}h ago`;
-  if (diffInDays < 7) return `${diffInDays}d ago`;
-  return date.toLocaleDateString();
-}
-
-// Helper to get chats from localStorage for anonymous users
 const getLocalChats = (): Chat[] => {
   if (typeof window === 'undefined') return [];
   try {
@@ -48,7 +32,6 @@ const getLocalChats = (): Chat[] => {
   }
 };
 
-// Helper to delete a chat from localStorage
 const deleteLocalChat = (chatId: string) => {
   if (typeof window === 'undefined') return;
   const chats = getLocalChats();
@@ -94,25 +77,20 @@ export default function Sidebar({ sidebarState, theme, currentChatId }: SidebarP
 
     try {
       if (session) {
-        // Logged-in user: Call API to delete
         await fetch(`/api/chats/${chatToDelete.id}`, { method: 'DELETE' });
       } else {
-        // Anonymous user: Delete from localStorage
         deleteLocalChat(chatToDelete.id);
       }
       
-      // If the currently viewed chat is deleted, redirect to home
       if (currentChatId === chatToDelete.id) {
         router.push('/');
       }
 
-      // Trigger a refresh of the chat list
       window.dispatchEvent(new CustomEvent('chats-updated'));
     } catch (error) {
       console.error("Failed to delete chat:", error);
-      // You could show an error toast here
     } finally {
-      setChatToDelete(null); // Close the modal
+      setChatToDelete(null);
     }
   };
 
@@ -173,10 +151,10 @@ export default function Sidebar({ sidebarState, theme, currentChatId }: SidebarP
                     >
                       <div className="flex justify-between items-center">
                         <span className="truncate flex-1 pr-4" title={chat.title}>{chat.title}</span>
-                        <span className="text-xs opacity-60 flex-shrink-0 flex items-center ml-2">
+                        {/* <span className="text-xs opacity-60 flex-shrink-0 flex items-center ml-2">
                           <ClockIcon className="h-3 w-3 mr-1" />
                           {formatDate(chat.updated_at)}
-                        </span>
+                        </span> */}
                       </div>
                     </Link>
                     <button

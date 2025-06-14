@@ -1,10 +1,11 @@
+// app/api/chats/route.ts
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { v4 as uuidv4 } from 'uuid';
 
-// API endpoint to get all chats for the current user
+// GET handler remains unchanged...
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -13,7 +14,6 @@ export async function GET(req: Request) {
 
     let query = supabase.from('chats').select('*').order('updated_at', { ascending: false });
 
-    // Filter by user_id if logged in, otherwise by anonymousId
     if (session?.user?.id) {
       query = query.eq('user_id', session.user.id);
     } else if (anonymousId) {
@@ -36,14 +36,16 @@ export async function GET(req: Request) {
   }
 }
 
-// API endpoint to create a new chat
+// Updated POST handler to save the modelId
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    const { anonymousId, title = 'New Chat' } = await req.json();
+    const { anonymousId, title = 'New Chat', modelId } = await req.json();
 
     const chatId = uuidv4();
     
+    // Add model_id to the insert statement.
+    // Assumes your 'chats' table has a 'model_id' column (e.g., TEXT).
     const { data: chat, error } = await supabase
       .from('chats')
       .insert({
@@ -51,6 +53,7 @@ export async function POST(req: Request) {
         title,
         user_id: session?.user?.id || null,
         anonymous_id: !session?.user?.id ? anonymousId : null,
+        model_id: modelId,
       })
       .select()
       .single();

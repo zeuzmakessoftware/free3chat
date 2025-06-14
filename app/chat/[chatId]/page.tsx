@@ -6,7 +6,7 @@ import Sidebar from "@/components/Sidebar";
 import SidebarTrigger from "@/components/SidebarTrigger";
 import ChatArea from "@/components/ChatArea";
 import { models, type Model } from "@/lib/models";
-import { Message } from "@/types";
+import { Message, Chat } from "@/types";
 
 export default function ChatPage() {
   const router = useRouter();
@@ -56,7 +56,7 @@ export default function ChatPage() {
       const chatDetailsRes = await fetch(`/api/chats?chatId=${chatId}&anonymousId=${anonymousId}`);
       if (!chatDetailsRes.ok) throw new Error('Failed to fetch chat details');
       const { chats } = await chatDetailsRes.json();
-      const currentChat = chats.find((c: any) => c.id === chatId);
+      const currentChat = chats.find((c: Chat) => c.id === chatId);
       
       if (currentChat && currentChat.model_id) {
         const modelForChat = models.find(m => m.id === currentChat.model_id) || models.find(m => m.active)!;
