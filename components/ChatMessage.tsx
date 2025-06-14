@@ -93,7 +93,7 @@ export function AIMessage({ message, theme, onRetry, isLoading }: AIMessageProps
 
   return (
     <div className="group relative">
-        <div className={`prose prose-sm max-w-none break-words ${theme === 'dark' ? 'prose-invert text-white' : 'text-black'}`}>
+        <div className={`prose prose-sm max-w-none break-words ${theme === 'dark' ? 'prose-invert !text-white' : '!text-black'}`}>
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{

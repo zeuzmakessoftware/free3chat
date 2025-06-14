@@ -5,9 +5,16 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-export async function POST(req: Request, { params }: { params: { chatId: string } }) {
+export async function POST(req: Request) {
+  return handlePostRequest(req);
+}
+
+async function handlePostRequest(req: Request) {
   try {
-    const { chatId } = params;
+    const url = new URL(req.url);
+    const pathParts = url.pathname.split('/');
+    const chatId = pathParts[pathParts.indexOf('chats') + 1];
+    
     if (!chatId) {
         return NextResponse.json({ error: 'Chat ID is missing' }, { status: 400 });
     }

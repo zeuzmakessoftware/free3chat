@@ -5,7 +5,6 @@ import { SearchIcon, LogInIcon, ClockIcon } from '@/components/Icons';
 import HoldTooltip from './HoldTooltip';
 import { useSession } from 'next-auth/react';
 import { CgProfile } from "react-icons/cg";
-import { useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 import { Chat } from '@/types';
 import Link from 'next/link';
@@ -29,10 +28,8 @@ function formatDate(dateString: string): string {
 export default function Sidebar({ sidebarState, theme, currentChatId, anonymousId }: SidebarProps) {
   const isExpanded = sidebarState === 'expanded';
   const { data: session } = useSession();
-  const router = useRouter();
   const [chats, setChats] = useState<Chat[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isCreating, setIsCreating] = useState(false);
 
   const fetchChats = useCallback(async () => {
     if (!anonymousId) return;
@@ -56,13 +53,6 @@ export default function Sidebar({ sidebarState, theme, currentChatId, anonymousI
     };
   }, [fetchChats]);
 
-  const handleNewChat = () => {
-    if (isCreating) return;
-    setIsCreating(true);
-    router.push('/');
-    setIsCreating(false);
-  };
-
   const filteredChats = searchQuery
     ? chats.filter(chat => chat.title.toLowerCase().includes(searchQuery.toLowerCase()))
     : chats;
@@ -71,7 +61,7 @@ export default function Sidebar({ sidebarState, theme, currentChatId, anonymousI
     <aside
       role="complementary"
       aria-label="Sidebar"
-      className={`fixed top-0 left-0 h-full bg-gradient-to-t ${theme === 'dark' ? 'from-[#0F0A0D] to-[#1C151A]' : 'from-[#F2E1F4] to-[#FBF5FA]'} dark:bg-gray-900 border-r ${theme === 'dark' ? 'border-r-white/10' : 'border-r-black/10'} shadow-lg transition-transform duration-300 ease-in-out ${
+      className={`fixed top-0 left-0 h-full bg-gradient-to-t ${theme === 'dark' ? 'from-[#0F0A0D] to-[#1C151A]' : 'bg-[#F2E1F4]'} shadow-lg transition-transform duration-300 ease-in-out ${
         isExpanded ? 'translate-x-0' : '-translate-x-full'
       } w-64 flex flex-col z-30`}
     >
@@ -83,11 +73,10 @@ export default function Sidebar({ sidebarState, theme, currentChatId, anonymousI
         <>
           <HoldTooltip tooltip="" shortcut={["⌘", "Shift", "O"]} position="right" theme={theme} className="w-full">
             <button
-              onClick={handleNewChat}
-              disabled={isCreating}
-              className={`w-full flex border !border-[#3e183d]/50 ${theme === 'dark' ? 'bg-radial from-[#5e183d] to-[#401020] text-[#f2c0d7] hover:from-[#8e486d] hover:to-[#6e284d]' : 'bg-[#aa3067] text-[#f2f0f7] hover:bg-[#ea70a7] hover:text-[#f2f0f7]'} items-center justify-center rounded-md px-4 py-2 font-bold text-sm transition ${isCreating ? 'opacity-70 cursor-not-allowed' : ''}`}
+              onClick={() => window.location.href = '/'}
+              className={`w-full flex border !border-[#3e183d]/50 ${theme === 'dark' ? 'bg-radial from-[#5e183d] to-[#401020] text-[#f2c0d7] hover:from-[#8e486d] hover:to-[#6e284d]' : 'bg-[#aa3067] text-[#f2f0f7] hover:bg-[#ea70a7] hover:text-[#f2f0f7]'} items-center justify-center rounded-md px-4 py-2 font-bold text-sm transition`}
             >
-              <span>{isCreating ? 'Creating...' : 'New Chat'}</span>
+              <span>New Chat</span>
             </button>
           </HoldTooltip>
           <div className="flex items-center w-full px-1" style={{ marginTop: '0rem', borderBottom: theme === 'dark' ? '1px solid #2C252A' : '1px solid #E2C1D4' }}>

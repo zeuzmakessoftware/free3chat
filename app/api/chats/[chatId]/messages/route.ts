@@ -1,14 +1,22 @@
-// app/api/chats/[chatId]/messages/route.ts
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
-// --- THE FIX for GET ---
-export async function GET(req: Request, { params }: { params: { chatId: string } }) {
+export async function GET(req: Request) {
+  return handleGetRequest(req);
+}
+
+export async function POST(req: Request) {
+  return handlePostRequest(req);
+}
+
+async function handleGetRequest(req: Request) {
   try {
-    const { chatId } = params; // Correct way to access chatId
-    const { searchParams } = new URL(req.url);
+    const url = new URL(req.url);
+    const pathParts = url.pathname.split('/');
+    const chatId = pathParts[pathParts.indexOf('chats') + 1];
+    const { searchParams } = url;
     const anonymousId = searchParams.get('anonymousId');
     
     const session = await getServerSession(authOptions);
@@ -46,11 +54,12 @@ export async function GET(req: Request, { params }: { params: { chatId: string }
   }
 }
 
-// --- THE FIX for POST ---
-export async function POST(req: Request, { params }: { params: { chatId: string } }) {
+async function handlePostRequest(req: Request) {
   try {
-    const { chatId } = params; // Correct way to access chatId
-    const { searchParams } = new URL(req.url);
+    const url = new URL(req.url);
+    const pathParts = url.pathname.split('/');
+    const chatId = pathParts[pathParts.indexOf('chats') + 1];
+    const { searchParams } = url;
     const anonymousId = searchParams.get('anonymousId');
     const { content } = await req.json();
     

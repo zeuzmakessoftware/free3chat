@@ -20,6 +20,7 @@ interface ChatAreaProps {
   onSendMessage?: (content: string) => Promise<void>;
   onRetry?: (messageId: string) => Promise<void>;
   onEdit?: (originalUserMessageId: string, newContent: string) => Promise<void>;
+  isHome?: boolean;
 }
 
 export default function ChatArea({ 
@@ -32,7 +33,8 @@ export default function ChatArea({
   isLoading = false,
   onSendMessage,
   onRetry,
-  onEdit
+  onEdit,
+  isHome,
 }: ChatAreaProps) {
   const [input, setInput] = useState('');
   const [showScrollButton, setShowScrollButton] = useState(false);
@@ -69,9 +71,7 @@ export default function ChatArea({
     setFirstPrompt(false);
     await onSendMessage(content);
   };
-  
-  const showWelcome = messages.length === 0;
-  
+    
   return (
     <main className={`firefox-scrollbar-margin-fix relative flex w-full h-full flex-col overflow-hidden transition-[width,height] ${sidebarState === 'expanded' ? 'mt-4' : ''}`}>
       <div className={`absolute bottom-0 ${sidebarState === 'expanded' ? 'top-0' : 'top-0'} w-full overflow-hidden border-l border-t border-chat-border ${theme === 'dark' ? 'bg-[#211C26]' : 'bg-[#FBF5FA]'} bg-fixed pb-[140px] transition-all ease-snappy max-sm:border-none sm:translate-y-3.5 ${sidebarState === 'expanded' ? 'sm:rounded-tl-xl' : ''}`}>
@@ -90,17 +90,16 @@ export default function ChatArea({
           setPrompt={setInput}
           isLoading={isLoading}
           onSend={() => handleSend(input)}
-          firstPrompt={showWelcome}
-          sidebarState={sidebarState}
-        />
+          firstPrompt={firstPrompt}
+          sidebarState={sidebarState}        />
       </div>
 
       <div ref={scrollRef} onScroll={handleScroll} className={`absolute inset-0 overflow-y-scroll overflow-x-hidden sm:pt-3.5 ${sidebarState === 'expanded' ? '' : 'mt-4'}`} style={{ paddingBottom: '144px', scrollbarGutter: 'stable both-edges' }}>
         <TopRightControls onToggleTheme={onToggleTheme} sidebarState={sidebarState} theme={theme} />
         
         <div role="log" aria-label="Chat messages" aria-live="polite" className="px-2">
-          {showWelcome ? (
-            <WelcomeScreen theme={theme} setPrompt={setInput} />
+          {firstPrompt && isHome ? (
+            <WelcomeScreen theme={theme} setPrompt={setInput} isHome={isHome} />
           ) : (
             <div className="mx-auto max-w-3xl space-y-6">
               {messages.map((msg, index) => 

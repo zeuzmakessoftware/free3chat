@@ -110,7 +110,7 @@ export default function ChatInput({
   return (
     <div className="absolute bottom-0 left-0 right-0 z-10 w-full px-2 pointer-events-none">
       <div className="mx-auto w-full max-w-3xl text-center pointer-events-auto">
-        {!firstPrompt || !showTerms && (
+        {!firstPrompt && showTerms && (
           <div
             className={`mt-3 rounded-t-md border border-secondary/40 bg-chat-background/50 p-4 text-sm ${
               theme === "dark" ? "text-white/80" : "text-black"

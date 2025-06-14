@@ -6,14 +6,12 @@ import { getAnonymousId } from "@/lib/utils/anonymousId";
 import Sidebar from "@/components/Sidebar";
 import SidebarTrigger from "@/components/SidebarTrigger";
 import ChatArea from "@/components/ChatArea";
-import { Message } from "@/types";
 
 export default function Page() {
   const router = useRouter();
   const [sidebarState, setSidebarState] = useState<"expanded" | "collapsed">("expanded");
   const [theme, setTheme] = useState("light");
-  const [firstPrompt, setFirstPrompt] = useState(true); // Welcome screen is active by default
-  const [messages, setMessages] = useState<Message[]>([]); // Always empty on main page
+  const [firstPrompt, setFirstPrompt] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [anonymousId, setAnonymousId] = useState<string>('');
 
@@ -88,9 +86,9 @@ export default function Page() {
             sidebarState={sidebarState} 
             firstPrompt={firstPrompt} 
             setFirstPrompt={setFirstPrompt}
-            messages={messages} // This will always be empty, showing the WelcomeScreen
             isLoading={isLoading}
             onSendMessage={handleSend}
+            isHome={true}
           />
         </div>
       </div>

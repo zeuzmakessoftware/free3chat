@@ -6,15 +6,12 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from 'next/server';
 import { Message } from '@/types';
 
-// Using Node.js runtime for full API compatibility with Supabase
 export const runtime = 'nodejs';
 
 async function getChatHistory(chatId: string): Promise<{role: string; parts: { text: string; }[] }[]> {
-  // --- THIS IS THE FIX ---
-  // We need to select all fields ('*') to match the 'Message' type.
   const { data, error } = await supabase
     .from('messages')
-    .select('*') // Changed from .select('role, content')
+    .select('*')
     .eq('chat_id', chatId)
     .order('created_at', { ascending: true })
     .limit(20); // Limit context window for performance and cost
@@ -33,9 +30,20 @@ async function getChatHistory(chatId: string): Promise<{role: string; parts: { t
     }));
 }
 
-export async function POST(req: Request, { params }: { params: { chatId: string; messageId: string } }) {
+export async function PATCH(req: Request) {
+  return handleRequest(req);
+}
+
+export async function POST(req: Request) {
+  return handleRequest(req);
+}
+
+async function handleRequest(req: Request) {
   try {
-    const { chatId, messageId } = params;
+    const url = new URL(req.url);
+    const pathParts = url.pathname.split('/');
+    const chatId = pathParts[pathParts.indexOf('chats') + 1];
+    const messageId = pathParts[pathParts.indexOf('messages') + 1];
     const { anonymousId } = await req.json();
     
     const session = await getServerSession(authOptions);
