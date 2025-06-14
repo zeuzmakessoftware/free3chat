@@ -1,53 +1,98 @@
+// app/page.tsx
 "use client";
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { v4 as uuidv4 } from "uuid";
 import { getAnonymousId } from "@/lib/utils/anonymousId";
+import Sidebar from "@/components/Sidebar";
+import SidebarTrigger from "@/components/SidebarTrigger";
+import ChatArea from "@/components/ChatArea";
+import { Message } from "@/types";
 
 export default function Page() {
   const router = useRouter();
+  const [sidebarState, setSidebarState] = useState<"expanded" | "collapsed">("expanded");
+  const [theme, setTheme] = useState("light");
+  const [firstPrompt, setFirstPrompt] = useState(true); // Welcome screen is active by default
+  const [messages, setMessages] = useState<Message[]>([]); // Always empty on main page
+  const [isLoading, setIsLoading] = useState(false);
+  const [anonymousId, setAnonymousId] = useState<string>('');
 
   useEffect(() => {
-    // Create a new chat and redirect to it
-    const createNewChat = async () => {
-      try {
-        // Get or create anonymous ID
-        const anonymousId = getAnonymousId();
-        
-        // Create a new chat
-        const response = await fetch('/api/chats', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ anonymousId }),
-        });
-        
-        const data = await response.json();
-        
-        if (data.chat && data.chat.id) {
-          // Redirect to the new chat
-          router.push(`/chat/${data.chat.id}`);
-        } else {
-          console.error('Failed to create chat:', data);
-          // Fallback to a client-side UUID if API fails
-          const fallbackChatId = uuidv4();
-          router.push(`/chat/${fallbackChatId}`);
-        }
-      } catch (error) {
-        console.error('Error creating chat:', error);
-        // Fallback to a client-side UUID if API fails
-        const fallbackChatId = uuidv4();
-        router.push(`/chat/${fallbackChatId}`);
+    const id = getAnonymousId();
+    setAnonymousId(id);
+  }, []);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("theme");
+    const darkPref = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  
+    if (saved) {
+      setTheme(saved);
+    } else if (darkPref) {
+      setTheme("dark");
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setSidebarState("collapsed");
       }
     };
     
-    createNewChat();
-  }, [router]);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  const toggleSidebar = () =>
+    setSidebarState((s) => (s === "expanded" ? "collapsed" : "expanded"));
+  
+  const toggleTheme = () => setTheme((t) => (t === "light" ? "dark" : "light"));
+
+  // This is the new, streamlined way to start a chat.
+  const handleSend = async (messageContent: string) => {
+    if (!messageContent.trim() || isLoading) return;
+    
+    setIsLoading(true); // Visual feedback to prevent double-clicks
+    
+    // Navigate immediately to the new chat page with the prompt.
+    // The chat page will handle creating the chat and sending the message.
+    // This provides the fastest possible user experience.
+    router.push(`/chat/new?prompt=${encodeURIComponent(messageContent)}`);
+  };
 
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-[#F2E1F4] dark:bg-[#1C151A]">
-      <div className="text-center">
-        <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-t-[#ba4077] mx-auto"></div>
-        <p className="text-[#ba4077] dark:text-[#f2c0d7]">Creating a new chat...</p>
+    <div className={`relative flex h-screen w-full ${theme === 'dark' ? 'bg-[#1C151A]' : 'bg-[#F2E1F4]'}`}>
+      <div className="relative">
+        <Sidebar 
+          sidebarState={sidebarState} 
+          theme={theme} 
+          anonymousId={anonymousId}
+        />
+      </div>
+
+      <div className={`flex-1 flex flex-col transition-all duration-300 relative ${sidebarState === "expanded" ? "md:ml-64" : ""}`}>
+        <div className="relative">
+          <SidebarTrigger onToggle={toggleSidebar} sidebarState={sidebarState} theme={theme} />
+        </div>
+        <div className="relative flex-1 min-h-0">
+          <ChatArea 
+            onToggleTheme={toggleTheme} 
+            theme={theme} 
+            sidebarState={sidebarState} 
+            firstPrompt={firstPrompt} 
+            setFirstPrompt={setFirstPrompt}
+            messages={messages} // This will always be empty, showing the WelcomeScreen
+            isLoading={isLoading}
+            onSendMessage={handleSend}
+          />
+        </div>
       </div>
     </div>
   );

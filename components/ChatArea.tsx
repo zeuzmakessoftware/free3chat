@@ -1,10 +1,11 @@
+// components/ChatArea.tsx
 "use client";
 import TopRightControls from '@/components/TopRightControls';
 import WelcomeScreen from './WelcomeScreen';
 import ChatInput from './ChatInput';
 import TopRightCurve from '@/components/TopRightCurve';
 import { useEffect, useState, useRef } from 'react';
-import { Message } from '@/lib/supabaseClient';
+import { Message } from '@/types';
 import { AIMessage, UserMessage } from './ChatMessage';
 import { ChevronDownIcon } from './Icons';
 
@@ -16,8 +17,6 @@ interface ChatAreaProps {
   setFirstPrompt: (firstPrompt: boolean) => void;
   messages?: Message[];
   isLoading?: boolean;
-  chatId?: string;
-  anonymousId?: string;
   onSendMessage?: (content: string) => Promise<void>;
   onRetry?: (messageId: string) => Promise<void>;
   onEdit?: (originalUserMessageId: string, newContent: string) => Promise<void>;
@@ -28,6 +27,7 @@ export default function ChatArea({
   theme, 
   sidebarState, 
   firstPrompt, 
+  setFirstPrompt,
   messages = [],
   isLoading = false,
   onSendMessage,
@@ -39,13 +39,20 @@ export default function ChatArea({
   
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
+  const scrollToBottom = (behavior: 'smooth' | 'auto' = 'smooth') => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior });
   };
 
   useEffect(() => {
+      // Use 'auto' for initial load to jump to bottom instantly
+      if(messages.length > 0) {
+        scrollToBottom('auto');
+      }
+  }, []); // Run only once on initial mount
+
+  useEffect(() => {
     if (!isLoading) {
-      scrollToBottom();
+      scrollToBottom('smooth');
     }
   }, [messages, isLoading]);
 
@@ -57,28 +64,12 @@ export default function ChatArea({
   };
   
   const handleSend = async (content: string) => {
-    if (!content.trim() || isLoading) return;
+    if (!content.trim() || !onSendMessage || isLoading) return;
     setInput('');
-    
-    // If parent provided onSendMessage, use that instead
-    if (onSendMessage) {
-      await onSendMessage(content);
-      return;
-    }
+    setFirstPrompt(false);
+    await onSendMessage(content);
   };
   
-  const handleRetryClick = async (messageId: string) => {
-    if (onRetry) {
-      await onRetry(messageId);
-    }
-  };
-  
-  const handleEditClick = async (messageId: string, newContent: string) => {
-    if (onEdit) {
-      await onEdit(messageId, newContent);
-    }
-  };
-
   const showWelcome = messages.length === 0;
   
   return (
@@ -87,7 +78,7 @@ export default function ChatArea({
         <div className="bg-noise absolute inset-0 -top-3.5 bg-fixed transition-transform ease-snappy [background-position:right_bottom]"></div>
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 w-full z-2 mt-4">
+      <div className="absolute bottom-0 left-0 right-0 w-full z-20 mt-4">
         <div className="fixed right-0 top-0 max-sm:hidden">
           {sidebarState === 'expanded' && (
             <TopRightCurve theme={theme} />
@@ -99,7 +90,7 @@ export default function ChatArea({
           setPrompt={setInput}
           isLoading={isLoading}
           onSend={() => handleSend(input)}
-          firstPrompt={firstPrompt}
+          firstPrompt={showWelcome}
           sidebarState={sidebarState}
         />
       </div>
@@ -111,12 +102,16 @@ export default function ChatArea({
           {showWelcome ? (
             <WelcomeScreen theme={theme} setPrompt={setInput} />
           ) : (
-            <div className="mx-auto max-w-3xl space-y-6 mb-32">
+            <div className="mx-auto max-w-3xl space-y-6">
               {messages.map((msg, index) => 
                 msg.role === 'user' ? (
-                  <UserMessage key={msg.id} message={msg} theme={theme} onRetry={() => handleRetryClick(msg.id)} onEdit={(messageId, newContent) => handleEditClick(messageId, newContent)} />
+                  <UserMessage key={msg.id} message={msg} theme={theme} onRetry={() => onRetry && onRetry(msg.id)} onEdit={(messageId, newContent) => onEdit && onEdit(messageId, newContent)} />
                 ) : (
-                  <AIMessage key={msg.id} message={msg} theme={theme} onRetry={() => index > 0 && handleRetryClick(messages[index - 1].id)} isLoading={isLoading && index === messages.length - 1} />
+                  <AIMessage key={msg.id} message={msg} theme={theme} onRetry={() => {
+                      if (onRetry && index > 0 && messages[index - 1].role === 'user') {
+                          onRetry(messages[index - 1].id);
+                      }
+                  }} isLoading={isLoading && index === messages.length - 1} />
                 )
               )}
             </div>
@@ -127,7 +122,7 @@ export default function ChatArea({
       {showScrollButton && (
         <div className="absolute bottom-[140px] inset-x-0 z-20 flex justify-center">
           <button
-            onClick={scrollToBottom}
+            onClick={() => scrollToBottom('smooth')}
             className={`flex items-center gap-2 rounded-full px-4 py-2 text-xs font-medium shadow-lg transition-colors ${
               theme === 'dark'
                 ? 'bg-[#2a2131] border !border-white/10 text-white/50 hover:bg-gray-700'

@@ -1,21 +1,30 @@
+// app/chat/[chatId]/page.tsx
 "use client";
-import React, { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { getAnonymousId } from "@/lib/utils/anonymousId";
 import Sidebar from "@/components/Sidebar";
 import SidebarTrigger from "@/components/SidebarTrigger";
 import ChatArea from "@/components/ChatArea";
-import { Message } from "@/lib/supabaseClient";
-import { getAnonymousId } from "@/lib/utils/anonymousId";
+import { Message } from "@/types";
 
 export default function ChatPage() {
+  const router = useRouter();
   const params = useParams();
-  const chatId = params.chatId as string;
+  const searchParams = useSearchParams();
+
+  const [chatId, setChatId] = useState<string>(params.chatId as string);
   const [sidebarState, setSidebarState] = useState<"expanded" | "collapsed">("expanded");
   const [theme, setTheme] = useState("light");
-  const [firstPrompt, setFirstPrompt] = useState(false);
+  const [anonymousId, setAnonymousId] = useState<string>('');
+  
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [anonymousId, setAnonymousId] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
+
+  const isInitializing = useRef(false);
+  const titleGenerated = useRef(false);
 
   useEffect(() => {
     const id = getAnonymousId();
@@ -25,25 +34,16 @@ export default function ChatPage() {
   useEffect(() => {
     const saved = localStorage.getItem("theme");
     const darkPref = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  
-    if (saved) {
-      setTheme(saved);
-    } else if (darkPref) {
-      setTheme("dark");
-    }
+    if (saved) setTheme(saved);
+    else if (darkPref) setTheme("dark");
   }, []);
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 768) {
-        setSidebarState("collapsed");
-      }
+      if (window.innerWidth < 768) setSidebarState("collapsed");
     };
-    
     handleResize();
-    
     window.addEventListener("resize", handleResize);
-    
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
@@ -52,172 +52,172 @@ export default function ChatPage() {
     localStorage.setItem("theme", theme);
   }, [theme]);
 
-  useEffect(() => {
-    if (chatId && anonymousId) {
-      fetchMessages();
-    }
-  }, [chatId, anonymousId]);
+  const toggleSidebar = () => setSidebarState(s => s === "expanded" ? "collapsed" : "expanded");
+  const toggleTheme = () => setTheme(t => t === "light" ? "dark" : "light");
 
-  const fetchMessages = async () => {
-    try {
-      const response = await fetch(`/api/chats/${chatId}/messages?anonymousId=${anonymousId}`);
-      const data = await response.json();
-      
-      if (data.messages) {
-        setMessages(data.messages as Message[]);
-        if (data.messages.length > 0) {
-          setFirstPrompt(true);
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching messages:', error);
-    }
-  };
-
-  const streamAndSetAiResponse = async (promptContent: string, aiMessageId: string) => {
+  // --- THE FIX: `handleSendMessage` now accepts `targetChatId` ---
+  const handleSendMessage = useCallback(async (content: string, targetChatId: string, messageHistory?: Message[]) => {
+    if (!content.trim() || !targetChatId) return;
     setIsLoading(true);
+    setError(null);
+
+    const currentMessages = messageHistory || messages;
+
+    const optimisticUserMessage: Message = {
+      id: `user-${Date.now()}`,
+      chat_id: targetChatId, // Use targetChatId
+      role: 'user',
+      content: content,
+      created_at: new Date().toISOString(),
+    };
+    const optimisticAiMessage: Message = {
+      id: `model-${Date.now()}`,
+      chat_id: targetChatId, // Use targetChatId
+      role: 'model',
+      content: '',
+      created_at: new Date().toISOString(),
+    };
+
+    setMessages([...currentMessages, optimisticUserMessage, optimisticAiMessage]);
+
     try {
-      const response = await fetch(`/api/chats/${chatId}/messages/${aiMessageId}/stream`, {
+      // Use targetChatId for API calls
+      const msgResponse = await fetch(`/api/chats/${targetChatId}/messages?anonymousId=${anonymousId}`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'x-anonymous-id': anonymousId
-        },
-        body: JSON.stringify({ prompt: promptContent, anonymousId }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content }),
       });
+      if (!msgResponse.ok) throw new Error('Failed to send message.');
+      const { aiMessage: realAiMessage } = await msgResponse.json();
 
-      if (!response.body) {
-        throw new Error("Response body is null");
-      }
+      setMessages(prev => prev.map(m => m.id === optimisticAiMessage.id ? realAiMessage : m));
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let streamedContent = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        
-        streamedContent += decoder.decode(value, { stream: true });
-        setMessages(prev => prev.map(msg => 
-          msg.id === aiMessageId ? { ...msg, content: streamedContent } : msg
-        ));
-      }
-
-      if (messages.length <= 2) {
-        generateChatTitle();
-      }
-    } catch (error) {
-      console.error('Fetch error:', error);
-      setMessages(prev => prev.map(msg => 
-        msg.id === aiMessageId ? { ...msg, content: 'Sorry, I encountered an error. Please try again.' } : msg
-      ));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const generateChatTitle = async () => {
-    try {
-      await fetch(`/api/chats/${chatId}/title`, {
+      const streamResponse = await fetch(`/api/chats/${targetChatId}/messages/${realAiMessage.id}/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ anonymousId }),
       });
-    } catch (error) {
-      console.error('Error generating chat title:', error);
-    }
-  };
 
-  const handleSend = async (messageContent: string) => {
-    if (!messageContent.trim() || isLoading) return;
-
-    try {
-      const response = await fetch(`/api/chats/${chatId}/messages?anonymousId=${anonymousId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: messageContent }),
-      });
-
-      const data = await response.json();
-      
-      if (data.userMessage && data.aiMessage) {
-        setMessages(prev => [
-          ...prev,
-          data.userMessage,
-          data.aiMessage
-        ]);
-        setFirstPrompt(true);
-        await streamAndSetAiResponse(messageContent, data.aiMessage.id);
+      if (!streamResponse.ok || !streamResponse.body) {
+        throw new Error('Failed to get streaming response.');
       }
-    } catch (error) {
-      console.error('Error sending message:', error);
-    }
-  };
 
-  const handleRetry = async (messageId: string) => {
-    if (isLoading) return;
-    
-    const messageIndex = messages.findIndex(msg => msg.id === messageId);
+      const reader = streamResponse.body.getReader();
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        setMessages(prev => prev.map(msg => 
+          msg.id === realAiMessage.id 
+            ? { ...msg, content: msg.content + chunk } 
+            : msg
+        ));
+      }
+
+      if (!titleGenerated.current && (messageHistory || []).length < 2) {
+        titleGenerated.current = true;
+        fetch(`/api/chats/${targetChatId}/title`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ anonymousId }),
+        }).then(() => {
+          window.dispatchEvent(new Event('chats-updated'));
+        });
+      }
+
+    } catch (err: any) {
+      setError(err.message || 'An error occurred.');
+      setMessages(prev => prev.filter(m => m.id !== optimisticUserMessage.id && m.id !== optimisticAiMessage.id));
+    } finally {
+      setIsLoading(false);
+      window.dispatchEvent(new Event('chats-updated'));
+    }
+  }, [anonymousId, messages]);
+
+  const handleRetry = useCallback(async (userMessageId: string) => {
+    const messageIndex = messages.findIndex(m => m.id === userMessageId);
     if (messageIndex === -1) return;
+
+    const contentToRetry = messages[messageIndex].content;
+    const historyToRetry = messages.slice(0, messageIndex);
     
-    const userMessageContent = messages[messageIndex].content;
-    const messagesToRetry = messages.slice(0, messageIndex);
-    setMessages(messagesToRetry);
+    setMessages(historyToRetry);
+    // Use the current state `chatId` which is correct here
+    await handleSendMessage(contentToRetry, chatId, historyToRetry);
+  }, [messages, handleSendMessage, chatId]);
+
+  const handleEdit = useCallback(async (userMessageId: string, newContent: string) => {
+    const messageIndex = messages.findIndex(m => m.id === userMessageId);
+    if (messageIndex === -1) return;
+
+    const historyToRetry = messages.slice(0, messageIndex);
     
-    try {
-      const response = await fetch(`/api/chats/${chatId}/messages?anonymousId=${anonymousId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: userMessageContent }),
-      });
-
-      const data = await response.json();
-      
-      if (data.userMessage && data.aiMessage) {
-        setMessages(prev => [
-          ...prev,
-          data.userMessage,
-          data.aiMessage
-        ]);
-        setFirstPrompt(true);
-        await streamAndSetAiResponse(userMessageContent, data.aiMessage.id);
-      }
-    } catch (error) {
-      console.error('Error retrying message:', error);
-    }
-  };
-
-  const handleEdit = async (originalUserMessageId: string, newContent: string) => {
-    if (!newContent.trim() || isLoading) return;
-
-    try {
-      const response = await fetch(`/api/chats/${chatId}/messages?anonymousId=${anonymousId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: newContent }),
-      });
-
-      const data = await response.json();
-      
-      if (data.userMessage && data.aiMessage) {
-        setMessages(prev => [
-          ...prev,
-          data.userMessage,
-          data.aiMessage
-        ]);
-        setFirstPrompt(true);
-        await streamAndSetAiResponse(newContent, data.aiMessage.id);
-      }
-    } catch (error) {
-      console.error('Error editing message:', error);
-    }
-  };
-
-  const toggleSidebar = () =>
-    setSidebarState((s) => (s === "expanded" ? "collapsed" : "expanded"));
+    setMessages(historyToRetry);
+    // Use the current state `chatId` which is correct here
+    await handleSendMessage(newContent, chatId, historyToRetry);
+  }, [messages, handleSendMessage, chatId]);
   
-  const toggleTheme = () => setTheme((t) => (t === "light" ? "dark" : "light"));
+  const initializeChat = useCallback(async () => {
+    if (!anonymousId) return;
+
+    if (chatId === 'new') {
+      const prompt = searchParams.get('prompt');
+      if (!prompt) {
+        router.replace('/');
+        return;
+      }
+      setIsLoading(true);
+      try {
+        const res = await fetch('/api/chats', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ anonymousId }),
+        });
+        const { chat } = await res.json();
+        if (!chat || !chat.id) throw new Error('Failed to create chat.');
+        
+        // Update state and URL before sending the message
+        setChatId(chat.id);
+        router.replace(`/chat/${chat.id}`, { scroll: false });
+        window.dispatchEvent(new Event('chats-updated'));
+        
+        // --- THE FIX: Pass the newly created `chat.id` directly ---
+        await handleSendMessage(prompt, chat.id, []);
+
+      } catch (err) {
+        setError('Could not start a new chat. Please try again.');
+        setIsLoading(false);
+      }
+    } else {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`/api/chats/${chatId}/messages?anonymousId=${anonymousId}`);
+        if (res.status === 404) {
+          router.replace('/');
+          return;
+        }
+        if (!res.ok) throw new Error('Failed to fetch messages.');
+        const { messages: fetchedMessages } = await res.json();
+        setMessages(fetchedMessages || []);
+        if (fetchedMessages && fetchedMessages.length > 0) {
+            titleGenerated.current = true;
+        }
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  }, [chatId, anonymousId, searchParams, router, handleSendMessage]);
+
+  useEffect(() => {
+    if (anonymousId && chatId && !isInitializing.current) {
+      isInitializing.current = true;
+      initializeChat();
+    }
+  }, [chatId, anonymousId, initializeChat]);
 
   return (
     <div className={`relative flex h-screen w-full ${theme === 'dark' ? 'bg-[#1C151A]' : 'bg-[#F2E1F4]'}`}>
@@ -230,26 +230,22 @@ export default function ChatPage() {
         />
       </div>
 
-      <div
-        className={`flex-1 flex flex-col transition-all duration-300 relative ${
-          sidebarState === "expanded" ? "ml-64" : ""
-        }`}
-      >
+      <div className={`flex-1 flex flex-col transition-all duration-300 relative ${sidebarState === "expanded" ? "md:ml-64" : ""}`}>
         <div className="relative">
           <SidebarTrigger onToggle={toggleSidebar} sidebarState={sidebarState} theme={theme} />
         </div>
         <div className="relative flex-1 min-h-0">
+          {error && <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-red-500 text-white p-2 rounded-md z-50">{error}</div>}
           <ChatArea 
             onToggleTheme={toggleTheme} 
             theme={theme} 
             sidebarState={sidebarState} 
-            firstPrompt={firstPrompt} 
-            setFirstPrompt={setFirstPrompt}
+            firstPrompt={false}
+            setFirstPrompt={() => {}}
             messages={messages}
             isLoading={isLoading}
-            chatId={chatId}
-            anonymousId={anonymousId}
-            onSendMessage={handleSend}
+            // --- THE FIX: Use the updated `handleSendMessage` ---
+            onSendMessage={(content) => handleSendMessage(content, chatId)}
             onRetry={handleRetry}
             onEdit={handleEdit}
           />
