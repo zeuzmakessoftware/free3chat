@@ -59,10 +59,23 @@ export default function Page() {
     
     setIsLoading(true); // Visual feedback to prevent double-clicks
     
-    // Navigate immediately to the new chat page with the prompt.
-    // The chat page will handle creating the chat and sending the message.
-    // This provides the fastest possible user experience.
-    router.push(`/chat/new?prompt=${encodeURIComponent(messageContent)}`);
+    try {
+      // Create a new chat first
+      const res = await fetch('/api/chats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ anonymousId }),
+      });
+      
+      const { chat } = await res.json();
+      if (!chat || !chat.id) throw new Error('Failed to create chat.');
+      
+      // Then navigate to the new chat with the chat ID
+      router.push(`/chat/${chat.id}?prompt=${encodeURIComponent(messageContent)}`);
+    } catch (error) {
+      console.error('Error creating chat:', error);
+      setIsLoading(false);
+    }
   };
 
   return (

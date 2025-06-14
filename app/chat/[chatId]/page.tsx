@@ -71,7 +71,9 @@ export default function ChatPage() {
     setIsLoading(true);
     setError(null);
 
-    const currentMessages = messageHistory || messages;
+    // Get the current messages state to work with
+    // Important: Use the messageHistory parameter if provided, otherwise use the current messages state
+    const currentMessages = messageHistory ? [...messageHistory] : [...messages];
 
     const optimisticUserMessage: Message = {
       id: `user-${Date.now()}`, chat_id: targetChatId, role: 'user', content: content, created_at: new Date().toISOString(),
@@ -80,7 +82,9 @@ export default function ChatPage() {
       id: `model-${Date.now()}`, chat_id: targetChatId, role: 'model', content: '', created_at: new Date().toISOString(),
     };
 
-    setMessages([...currentMessages, optimisticUserMessage, optimisticAiMessage]);
+    // Update messages with optimistic updates
+    const updatedMessages = [...currentMessages, optimisticUserMessage, optimisticAiMessage];
+    setMessages(updatedMessages);
 
     try {
       const msgResponse = await fetch(`/api/chats/${targetChatId}/messages?anonymousId=${anonymousId}`, {
@@ -89,7 +93,17 @@ export default function ChatPage() {
       if (!msgResponse.ok) throw new Error('Failed to send message.');
       const { aiMessage: realAiMessage } = await msgResponse.json();
 
-      setMessages(prev => prev.map(m => m.id === optimisticAiMessage.id ? realAiMessage : m));
+      // Update with real AI message ID - use a functional update to ensure we're working with the latest state
+      setMessages(prev => {
+        // Find the optimistic message in the current state
+        const optimisticIndex = prev.findIndex(m => m.id === optimisticAiMessage.id);
+        if (optimisticIndex === -1) return prev; // Safety check
+        
+        // Create a new array with all messages and replace the optimistic one
+        const updated = [...prev];
+        updated[optimisticIndex] = {...realAiMessage};
+        return updated;
+      });
 
       const streamResponse = await fetch(`/api/chats/${targetChatId}/messages/${realAiMessage.id}/stream`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ anonymousId }),
@@ -98,16 +112,30 @@ export default function ChatPage() {
       if (!streamResponse.ok || !streamResponse.body) throw new Error('Failed to get streaming response.');
       const reader = streamResponse.body.getReader();
       const decoder = new TextDecoder();
+      
+      // Stream the response
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
         const chunk = decoder.decode(value, { stream: true });
-        setMessages(prev => prev.map(msg => 
-          msg.id === realAiMessage.id ? { ...msg, content: msg.content + chunk } : msg
-        ));
+        
+        // Update messages with each chunk using a functional update to ensure we're working with the latest state
+        setMessages(prev => {
+          // Find the real AI message in the current state
+          const messageIndex = prev.findIndex(msg => msg.id === realAiMessage.id);
+          if (messageIndex === -1) return prev; // Safety check
+          
+          // Create a new array with all messages and update the content of the AI message
+          const updated = [...prev];
+          updated[messageIndex] = { 
+            ...updated[messageIndex], 
+            content: updated[messageIndex].content + chunk 
+          };
+          return updated;
+        });
       }
 
-      if (!titleGenerated.current && (messageHistory || []).length < 2) {
+      if (!titleGenerated.current && currentMessages.length < 2) {
         titleGenerated.current = true;
         fetch(`/api/chats/${targetChatId}/title`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ anonymousId }),
@@ -120,22 +148,36 @@ export default function ChatPage() {
       setIsLoading(false);
       window.dispatchEvent(new Event('chats-updated'));
     }
-  }, [anonymousId]);
+  }, [anonymousId, messages]); // Include messages in the dependency array
 
   const handleRetry = useCallback(async (userMessageId: string) => {
+    // Find the message to retry
     const messageIndex = messages.findIndex(m => m.id === userMessageId);
     if (messageIndex === -1) return;
+    
+    // Get the content to retry and the history up to that point
     const contentToRetry = messages[messageIndex].content;
-    const historyToRetry = messages.slice(0, messageIndex);
-    setMessages(historyToRetry);
+    const historyToRetry = [...messages.slice(0, messageIndex)];
+    
+    // Keep the history in state but add a loading indicator
+    setIsLoading(true);
+    
+    // Send the message with the history
     await handleSendMessage(contentToRetry, chatId, historyToRetry);
   }, [messages, handleSendMessage, chatId]);
 
   const handleEdit = useCallback(async (userMessageId: string, newContent: string) => {
+    // Find the message to edit
     const messageIndex = messages.findIndex(m => m.id === userMessageId);
     if (messageIndex === -1) return;
-    const historyToRetry = messages.slice(0, messageIndex);
-    setMessages(historyToRetry);
+    
+    // Get the history up to that point
+    const historyToRetry = [...messages.slice(0, messageIndex)];
+    
+    // Keep the history in state but add a loading indicator
+    setIsLoading(true);
+    
+    // Send the edited message with the history
     await handleSendMessage(newContent, chatId, historyToRetry);
   }, [messages, handleSendMessage, chatId]);
   
@@ -175,6 +217,15 @@ export default function ChatPage() {
         setMessages(fetchedMessages || []);
         if (fetchedMessages && fetchedMessages.length > 0) {
             titleGenerated.current = true;
+        }
+        
+        // Check if there's a prompt parameter to process after loading existing messages
+        const prompt = searchParams.get('prompt');
+        if (prompt && fetchedMessages) {
+          // Wait a moment to ensure messages are rendered first
+          setTimeout(() => {
+            handleSendMessage(prompt, chatId, fetchedMessages);
+          }, 100);
         }
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : 'An error occurred.');

@@ -1,15 +1,23 @@
 // components/Sidebar.tsx
 'use client';
 
-import { SearchIcon, LogInIcon, ClockIcon } from '@/components/Icons';
+import { SearchIcon, LogInIcon, ClockIcon, XIcon } from '@/components/Icons';
 import HoldTooltip from './HoldTooltip';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { CgProfile } from "react-icons/cg";
 import { useEffect, useState, useCallback } from 'react';
 import { Chat } from '@/types';
 import Link from 'next/link';
+import DeleteConfirmationModal from './DeleteConfirmationModal';
 
-// Helper function to format dates in a human-readable way
+interface SidebarProps {
+  sidebarState: 'expanded' | 'collapsed';
+  theme: string;
+  currentChatId?: string;
+  anonymousId?: string;
+}
+
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
   const now = new Date();
@@ -25,129 +33,205 @@ function formatDate(dateString: string): string {
   return date.toLocaleDateString();
 }
 
-export default function Sidebar({ sidebarState, theme, currentChatId, anonymousId }: SidebarProps) {
+// Helper to get chats from localStorage for anonymous users
+const getLocalChats = (): Chat[] => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const localData = localStorage.getItem('anonymousChats');
+    if (!localData) return [];
+    const chats: Chat[] = JSON.parse(localData);
+    return chats.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+  } catch (error) {
+    console.error("Failed to parse local chats", error);
+    localStorage.removeItem('anonymousChats');
+    return [];
+  }
+};
+
+// Helper to delete a chat from localStorage
+const deleteLocalChat = (chatId: string) => {
+  if (typeof window === 'undefined') return;
+  const chats = getLocalChats();
+  const updatedChats = chats.filter(chat => chat.id !== chatId);
+  localStorage.setItem('anonymousChats', JSON.stringify(updatedChats));
+};
+
+export default function Sidebar({ sidebarState, theme, currentChatId }: SidebarProps) {
   const isExpanded = sidebarState === 'expanded';
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [chats, setChats] = useState<Chat[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [chatToDelete, setChatToDelete] = useState<Chat | null>(null);
 
-  const fetchChats = useCallback(async () => {
-    if (!anonymousId) return;
-    try {
-      const response = await fetch(`/api/chats?anonymousId=${anonymousId}`);
-      const data = await response.json();
-      if (data.chats) {
-        setChats(data.chats);
+  const loadChats = useCallback(async () => {
+    if (status === 'loading') return;
+
+    if (session) {
+      try {
+        const response = await fetch(`/api/chats`);
+        const data = await response.json();
+        setChats(data.chats || []);
+      } catch (error) {
+        console.error('Error fetching user chats:', error);
+        setChats([]);
       }
-    } catch (error) {
-      console.error('Error fetching chats:', error);
+    } else {
+      setChats(getLocalChats());
     }
-  }, [anonymousId]);
+  }, [status, session]);
 
   useEffect(() => {
-    fetchChats();
-    // Listen for custom event to refetch chats
-    window.addEventListener('chats-updated', fetchChats);
+    loadChats();
+    window.addEventListener('chats-updated', loadChats);
     return () => {
-      window.removeEventListener('chats-updated', fetchChats);
+      window.removeEventListener('chats-updated', loadChats);
     };
-  }, [fetchChats]);
+  }, [loadChats]);
+
+  const handleDeleteConfirm = async () => {
+    if (!chatToDelete) return;
+
+    try {
+      if (session) {
+        // Logged-in user: Call API to delete
+        await fetch(`/api/chats/${chatToDelete.id}`, { method: 'DELETE' });
+      } else {
+        // Anonymous user: Delete from localStorage
+        deleteLocalChat(chatToDelete.id);
+      }
+      
+      // If the currently viewed chat is deleted, redirect to home
+      if (currentChatId === chatToDelete.id) {
+        router.push('/');
+      }
+
+      // Trigger a refresh of the chat list
+      window.dispatchEvent(new CustomEvent('chats-updated'));
+    } catch (error) {
+      console.error("Failed to delete chat:", error);
+      // You could show an error toast here
+    } finally {
+      setChatToDelete(null); // Close the modal
+    }
+  };
 
   const filteredChats = searchQuery
     ? chats.filter(chat => chat.title.toLowerCase().includes(searchQuery.toLowerCase()))
     : chats;
 
   return (
-    <aside
-      role="complementary"
-      aria-label="Sidebar"
-      className={`fixed top-0 left-0 h-full bg-gradient-to-t ${theme === 'dark' ? 'from-[#0F0A0D] to-[#1C151A]' : 'bg-[#F2E1F4]'} shadow-lg transition-transform duration-300 ease-in-out ${
-        isExpanded ? 'translate-x-0' : '-translate-x-full'
-      } w-64 flex flex-col z-30`}
-    >
-      <header className="flex items-center justify-center px-4 py-4 border-b border-white/5">
-        <h1 className={`text-xl font-bold ${theme === 'dark' ? 'text-[#f2c0d7]' : 'text-[#ba4077]'}`}>OST3.chat</h1>
-      </header>
+    <>
+      <aside
+        role="complementary"
+        aria-label="Sidebar"
+        className={`fixed top-0 left-0 h-full bg-gradient-to-t ${theme === 'dark' ? 'from-[#0F0A0D] to-[#1C151A]' : 'bg-[#F2E1F4]'} shadow-lg transition-transform duration-300 ease-in-out ${
+          isExpanded ? 'w-64' : 'w-0'
+        } flex flex-col z-30`}
+      >
+        {isExpanded && (
+          <>
+        <header className="flex items-center justify-center px-4 py-4 border-b border-white/5">
+          <h1 className={`text-xl font-bold ${theme === 'dark' ? 'text-[#f2c0d7]' : 'text-[#ba4077]'}`}>OST3.chat</h1>
+        </header>
 
-      <div className="flex-1 px-4 py-2 space-y-4 overflow-y-auto">
-        <>
-          <HoldTooltip tooltip="" shortcut={["⌘", "Shift", "O"]} position="right" theme={theme} className="w-full">
-            <button
-              onClick={() => window.location.href = '/'}
-              className={`w-full flex border !border-[#3e183d]/50 ${theme === 'dark' ? 'bg-radial from-[#5e183d] to-[#401020] text-[#f2c0d7] hover:from-[#8e486d] hover:to-[#6e284d]' : 'bg-[#aa3067] text-[#f2f0f7] hover:bg-[#ea70a7] hover:text-[#f2f0f7]'} items-center justify-center rounded-md px-4 py-2 font-bold text-sm transition`}
-            >
-              <span>New Chat</span>
-            </button>
-          </HoldTooltip>
-          <div className="flex items-center w-full px-1" style={{ marginTop: '0rem', borderBottom: theme === 'dark' ? '1px solid #2C252A' : '1px solid #E2C1D4' }}>
-            <SearchIcon className={`h-4 w-4 ${theme === 'dark' ? 'text-[#f2c0d7]' : 'text-[#ba4077]'}`} />
-            <input
-              id="threads"
-              type="text"
-              placeholder="Search chats..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full rounded-md py-2 pl-2 pr-4 text-[14px] ${theme === 'dark' ? '!placeholder-[#927987] text-[#f2c0d7]' : '!placeholder-[#b27987] text-[#ba4077]'} bg-transparent focus:outline-none`}
-            />
-          </div>
-          <div className="space-y-1 mt-2 flex-grow overflow-y-auto">
-            {filteredChats.length > 0 ? (
-              filteredChats.map((chat) => (
-                <Link 
-                  href={`/chat/${chat.id}`} 
-                  key={chat.id}
-                  className={`block rounded-lg px-3 py-2 text-sm transition-colors ${chat.id === currentChatId 
-                    ? theme === 'dark' 
-                      ? 'bg-[#3e183d] text-[#f2c0d7]' 
-                      : 'bg-[#e2a0c7] text-[#7a2a50]'
-                    : theme === 'dark'
-                      ? 'text-[#d8a0b7] hover:bg-[#2a1a24]'
-                      : 'text-[#ba4077] hover:bg-[#f2d1e4]'
-                  }`}
-                >
-                  <div className="flex justify-between items-center">
-                    <span className="truncate flex-1" title={chat.title}>{chat.title}</span>
-                    <span className="text-xs opacity-60 flex-shrink-0 flex items-center ml-2">
-                      <ClockIcon className="h-3 w-3 mr-1" />
-                      {formatDate(chat.updated_at)}
-                    </span>
+        <div className="flex-1 px-4 py-2 space-y-4 overflow-y-auto">
+          <>
+            <HoldTooltip tooltip="" shortcut={["⌘", "Shift", "O"]} position="right" theme={theme} className="w-full">
+              <button
+                onClick={() => router.push('/')}
+                className={`w-full flex border !border-[#3e183d]/50 ${theme === 'dark' ? 'bg-radial from-[#5e183d] to-[#401020] text-[#f2c0d7] hover:from-[#8e486d] hover:to-[#6e284d]' : 'bg-[#aa3067] text-[#f2f0f7] hover:bg-[#ea70a7] hover:text-[#f2f0f7]'} items-center justify-center rounded-md px-4 py-2 font-bold text-sm transition`}
+              >
+                <span>New Chat</span>
+              </button>
+            </HoldTooltip>
+            <div className="flex items-center w-full px-1" style={{ marginTop: '0rem', borderBottom: theme === 'dark' ? '1px solid #2C252A' : '1px solid #E2C1D4' }}>
+              <SearchIcon className={`h-4 w-4 ${theme === 'dark' ? 'text-[#f2c0d7]' : 'text-[#ba4077]'}`} />
+              <input
+                id="threads"
+                type="text"
+                placeholder="Search chats..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={`w-full rounded-md py-2 pl-2 pr-4 text-[14px] ${theme === 'dark' ? '!placeholder-[#927987] text-[#f2c0d7]' : '!placeholder-[#b27987] text-[#ba4077]'} bg-transparent focus:outline-none`}
+              />
+            </div>
+            <div className="space-y-1 mt-2 flex-grow overflow-y-auto">
+              {filteredChats.length > 0 ? (
+                filteredChats.map((chat) => (
+                  <div key={chat.id} className="group relative">
+                    <Link 
+                      href={`/chat/${chat.id}`} 
+                      className={`block rounded-lg px-3 py-2 text-sm transition-colors ${chat.id === currentChatId 
+                        ? theme === 'dark' 
+                          ? 'bg-[#3e183d] text-[#f2c0d7]' 
+                          : 'bg-[#e2a0c7] text-[#7a2a50]'
+                        : theme === 'dark'
+                          ? 'text-[#d8a0b7] hover:bg-[#2a1a24]'
+                          : 'text-[#ba4077] hover:bg-[#f2d1e4]'
+                      }`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <span className="truncate flex-1 pr-4" title={chat.title}>{chat.title}</span>
+                        <span className="text-xs opacity-60 flex-shrink-0 flex items-center ml-2">
+                          <ClockIcon className="h-3 w-3 mr-1" />
+                          {formatDate(chat.updated_at)}
+                        </span>
+                      </div>
+                    </Link>
+                    <button
+                      onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setChatToDelete(chat);
+                      }}
+                      className={`absolute right-2 top-[79%] -translate-y-1/2 p-1 rounded-full opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity ${
+                        theme === 'dark' ? 'text-white/80 hover:bg-white/10' : 'text-black/80 hover:bg-black/10'
+                      }`}
+                      title="Delete chat"
+                    >
+                        <XIcon className="h-4 w-4" />
+                    </button>
                   </div>
-                </Link>
-              ))
-            ) : (
-              <div className={`text-center py-4 text-sm ${theme === 'dark' ? 'text-[#927987]' : 'text-[#b27987]'}`}>
-                {searchQuery ? 'No chats found' : 'No chats yet'}
-              </div>
-            )}
-          </div>
-        </>
-      </div>
-
-      <div className="p-2 border-t border-white/5">
-          <div className={`flex items-center rounded-lg ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-black/5'} transition-colors`}>
-            {session ? (
-              <button className="flex items-center gap-3 w-full px-2 py-2 text-left">
-                <CgProfile size={24} className={theme === 'dark' ? 'text-white' : 'text-black'} />
-                <div className="flex flex-col">
-                  <p className={`text-sm font-semibold ${theme === 'dark' ? 'text-white' : 'text-black'}`}>{session.user?.name || 'User'}</p>
-                  <p className={`text-xs ${theme === 'dark' ? 'text-white/70' : 'text-black/70'}`}>Free Plan</p>
+                ))
+              ) : (
+                <div className={`text-center py-4 text-sm ${theme === 'dark' ? 'text-[#927987]' : 'text-[#b27987]'}`}>
+                  {searchQuery ? 'No chats found' : 'No chats yet'}
                 </div>
-              </button>
-            ) : (
-              <button onClick={() => window.open("/auth")} className={`flex items-center gap-3 w-full p-3 rounded-lg font-semibold ${theme === 'dark' ? 'text-[#f2c0d7]' : 'text-[#ba4077]'}`}>
-                <LogInIcon className="h-5 w-5" /> 
-                <span>Login</span>
-              </button>
-            )}
-          </div>
-      </div>
-    </aside>
-  );
-}
+              )}
+            </div>
+          </>
+        </div>
 
-interface SidebarProps {
-  sidebarState: 'expanded' | 'collapsed';
-  theme: string;
-  currentChatId?: string;
-  anonymousId?: string;
+        <div className="p-2 border-t border-white/5">
+            <div className={`flex items-center rounded-lg ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-black/5'} transition-colors`}>
+              {session ? (
+                <button className="flex items-center gap-3 w-full px-2 py-2 text-left">
+                  <CgProfile size={24} className={theme === 'dark' ? 'text-white' : 'text-black'} />
+                  <div className="flex flex-col">
+                    <p className={`text-sm font-semibold ${theme === 'dark' ? 'text-white' : 'text-black'}`}>{session.user?.username || 'User'}</p>
+                    <p className={`text-xs ${theme === 'dark' ? 'text-white/70' : 'text-black/70'}`}>Free Plan</p>
+                  </div>
+                </button>
+              ) : (
+                <button onClick={() => window.open("/auth")} className={`flex items-center gap-3 w-full p-3 rounded-lg font-semibold ${theme === 'dark' ? 'text-[#f2c0d7]' : 'text-[#ba4077]'}`}>
+                  <LogInIcon className="h-5 w-5" /> 
+                  <span>Login</span>
+                </button>
+              )}
+            </div>
+        </div>
+        </>
+      )}
+      </aside>
+
+      <DeleteConfirmationModal
+        isOpen={!!chatToDelete}
+        onClose={() => setChatToDelete(null)}
+        onConfirm={handleDeleteConfirm}
+        chatTitle={chatToDelete?.title || ''}
+        theme={theme}
+      />
+    </>
+  );
 }

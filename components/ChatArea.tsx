@@ -101,7 +101,7 @@ export default function ChatArea({
           {firstPrompt && isHome ? (
             <WelcomeScreen theme={theme} setPrompt={setInput} isHome={isHome} />
           ) : (
-            <div className="mx-auto max-w-3xl space-y-6">
+            <div className="mx-auto max-w-3xl space-y-12 mb-48 mt-12">
               {messages.map((msg, index) => 
                 msg.role === 'user' ? (
                   <UserMessage key={msg.id} message={msg} theme={theme} onRetry={() => onRetry && onRetry(msg.id)} onEdit={(messageId, newContent) => onEdit && onEdit(messageId, newContent)} />
