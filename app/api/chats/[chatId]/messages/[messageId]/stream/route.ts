@@ -31,9 +31,9 @@ type ChatHistoryItem = GoogleHistoryItem | GroqHistoryItem;
 const modelMapping: Record<string, { provider: 'google' | 'groq'; name: string }> = {
   'gemini-2-5-flash': { provider: 'google', name: 'gemini-2.5-flash' },
   'llama-3-3-70b': { provider: 'groq', name: 'llama-3.3-70b-versatile' },
-  'llama-4-maverick': { provider: 'groq', name: 'llama4-maverick' },
+  'llama-4-maverick': { provider: 'groq', name: 'meta-llama/llama-4-maverick-17b-128e-instruct' },
   'qwen-qwq-32b': { provider: 'groq', name: 'qwen-qwq-32b' },
-  'deepseek-r1-llama-distilled': { provider: 'groq', name: 'deepseek-r1-llama-distilled' },
+  'deepseek-r1-llama-distilled': { provider: 'groq', name: 'deepseek-r1-distill-llama-70b' },
 };
 const defaultModel = modelMapping['gemini-2-5-flash'];
 
