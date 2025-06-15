@@ -1,6 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// IMPORTANT! Set the runtime to edge
 export const runtime = "edge";
 
 export async function POST(req: Request) {
@@ -16,7 +15,6 @@ export async function POST(req: Request) {
 
     const result = await model.generateContentStream(prompt);
 
-    // Convert the response into a friendly text-stream
     const stream = new ReadableStream({
       async start(controller) {
         for await (const chunk of result.stream) {
@@ -25,7 +23,6 @@ export async function POST(req: Request) {
             const encoded = new TextEncoder().encode(chunkText);
             controller.enqueue(encoded);
           } catch (error) {
-             // Handle cases where chunk.text() might fail
              console.error("Error processing chunk:", error);
           }
         }

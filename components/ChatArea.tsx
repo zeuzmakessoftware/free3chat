@@ -1,4 +1,3 @@
-// components/ChatArea.tsx
 "use client";
 import TopRightControls from '@/components/TopRightControls';
 import WelcomeScreen from './WelcomeScreen';
@@ -22,7 +21,6 @@ interface ChatAreaProps {
   onRetry?: (messageId: string) => Promise<void>;
   onEdit?: (originalUserMessageId: string, newContent: string) => Promise<void>;
   isHome?: boolean;
-  // Add activeModel and onModelSelect to props
   activeModel?: Model;
   onModelSelect?: (model: Model) => void;
 }

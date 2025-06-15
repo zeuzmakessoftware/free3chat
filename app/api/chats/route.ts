@@ -1,11 +1,9 @@
-// app/api/chats/route.ts
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { v4 as uuidv4 } from 'uuid';
 
-// GET handler remains unchanged...
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -36,7 +34,6 @@ export async function GET(req: Request) {
   }
 }
 
-// Updated POST handler to save the modelId
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -44,8 +41,6 @@ export async function POST(req: Request) {
 
     const chatId = uuidv4();
     
-    // Add model_id to the insert statement.
-    // Assumes your 'chats' table has a 'model_id' column (e.g., TEXT).
     const { data: chat, error } = await supabase
       .from('chats')
       .insert({

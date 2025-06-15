@@ -1,9 +1,8 @@
-// app/api/chats/[chatId]/messages/[messageId]/stream/route.ts
 import { supabase } from '@/lib/supabaseClient';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { Groq } from 'groq-sdk'; // Import Groq
+import { Groq } from 'groq-sdk';
 import { NextResponse } from 'next/server';
 import { Message } from '@/types';
 

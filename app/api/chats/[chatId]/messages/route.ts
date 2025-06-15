@@ -81,7 +81,6 @@ async function handlePostRequest(req: Request) {
       return NextResponse.json({ error: 'Chat not found or unauthorized' }, { status: 404 });
     }
     
-    // Insert user message
     const { data: userMessage, error: userMessageError } = await supabase
       .from('messages')
       .insert({ chat_id: chatId, role: 'user', content })
@@ -92,7 +91,6 @@ async function handlePostRequest(req: Request) {
       return NextResponse.json({ error: userMessageError.message }, { status: 500 });
     }
     
-    // Insert AI placeholder message
     const { data: aiMessage, error: aiMessageError } = await supabase
       .from('messages')
       .insert({ chat_id: chatId, role: 'model', content: '' })
@@ -100,12 +98,10 @@ async function handlePostRequest(req: Request) {
       .single();
     
     if (aiMessageError) {
-      // Best effort to clean up if this part fails
       await supabase.from('messages').delete().eq('id', userMessage.id);
       return NextResponse.json({ error: aiMessageError.message }, { status: 500 });
     }
     
-    // Update chat's updated_at timestamp in the background, don't need to await
     supabase
       .from('chats')
       .update({ updated_at: new Date().toISOString() })

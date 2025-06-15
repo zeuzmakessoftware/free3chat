@@ -1,4 +1,3 @@
-// app/api/chats/[chatId]/title/route.ts
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
 import { getServerSession } from 'next-auth';
@@ -59,8 +58,8 @@ async function handlePostRequest(req: Request) {
     const prompt = `Generate a very short, concise title (4 words max) for a conversation that starts with: "${firstUserMessage}". Do not use quotes or any other formatting in your response. Just return the plain text title.`;
     
     const result = await model.generateContent(prompt);
-    let title = result.response.text().trim().replace(/"/g, ''); // Clean up response
-    if (!title) title = "Untitled Chat"; // Fallback title
+    let title = result.response.text().trim().replace(/"/g, '');
+    if (!title) title = "Untitled Chat";
     
     const { data: updatedChat, error: updateError } = await supabase
       .from('chats')

@@ -3,22 +3,17 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { supabase } from '@/lib/supabaseClient';
 
-// DELETE /api/chats/[chatId]
 export async function DELETE(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     
-    // Check if user is authenticated
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    // Extract chatId from URL path
     const url = new URL(request.url);
     const pathParts = url.pathname.split('/');
     const chatId = pathParts[pathParts.length - 1];
 
-    // Verify the chat belongs to the current user
     const { data: chat, error: chatError } = await supabase
       .from('chats')
       .select('*')
@@ -30,7 +25,6 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Chat not found' }, { status: 404 });
     }
 
-    // Delete all messages associated with the chat first
     const { error: messagesError } = await supabase
       .from('messages')
       .delete()
@@ -41,7 +35,6 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: messagesError.message }, { status: 500 });
     }
 
-    // Then delete the chat
     const { error: chatDeleteError } = await supabase
       .from('chats')
       .delete()

@@ -36,7 +36,6 @@ export default function HoldTooltip({
         let top = 0
         let left = 0
 
-        // Calculate position based on the element's position in the viewport
         switch (position) {
           case 'bottom':
             top = rect.bottom + window.scrollY + 8
