@@ -118,7 +118,7 @@ const UpgradeCard = ({ theme }: { theme: string }) => (
         <h2 className={`text-left mb-2 !font-semibold !text-lg ${theme === "dark" ? "!text-white" : "!text-pink-800"}`}>Unlock all models + higher limits</h2>
         <div className="flex justify-between">
             <h4 className={`text-xl ${theme === "dark" ? "!text-white" : "!text-pink-400"}`}><span className="text-pink-400 text-3xl font-bold">$8</span>/month</h4>
-            <button className={`${theme === "dark" ? "bg-pink-950/80 hover:bg-pink-950" : "bg-pink-800/80 hover:bg-pink-800/60"} border !border-pink-400/30 rounded-xl font-bold text-sm text-white/80 px-4 py-2`}>Go to T3.chat</button>
+            <button onClick={() => window.open("https://t3.chat", "_blank")} className={`${theme === "dark" ? "bg-pink-950/80 hover:bg-pink-950" : "bg-pink-800/80 hover:bg-pink-800/60"} border !border-pink-400/30 rounded-xl font-bold text-sm text-white/80 px-4 py-2`}>Go to T3.chat</button>
         </div>
     </div>
 );
