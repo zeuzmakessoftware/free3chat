@@ -191,7 +191,7 @@ export default function Sidebar({ sidebarState, theme, currentChatId }: SidebarP
                   </div>
                 </button>
               ) : (
-                <button onClick={() => window.open("/auth")} className={`flex items-center gap-3 w-full p-3 rounded-lg font-semibold ${theme === 'dark' ? 'text-[#f2c0d7]' : 'text-[#ba4077]'}`}>
+                <button onClick={() => window.location.href = "/auth"} className={`flex items-center gap-3 w-full p-3 rounded-lg font-semibold ${theme === 'dark' ? 'text-[#f2c0d7]' : 'text-[#ba4077]'}`}>
                   <LogInIcon className="h-5 w-5" /> 
                   <span>Login</span>
                 </button>

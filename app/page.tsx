@@ -6,11 +6,13 @@ import Sidebar from "@/components/Sidebar";
 import SidebarTrigger from "@/components/SidebarTrigger";
 import ChatArea from "@/components/ChatArea";
 import { models, type Model } from "@/lib/models";
+import { useTheme } from "next-themes";
 
 export default function Page() {
   const router = useRouter();
   const [sidebarState, setSidebarState] = useState<"expanded" | "collapsed">("expanded");
-  const [theme, setTheme] = useState("light");
+  const { theme: nextTheme, setTheme: setNextTheme } = useTheme();
+  const [theme, setTheme] = useState<string>("system");
   const [firstPrompt, setFirstPrompt] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [anonymousId, setAnonymousId] = useState<string>('');
@@ -23,15 +25,10 @@ export default function Page() {
   }, []);
 
   useEffect(() => {
-    const saved = localStorage.getItem("theme");
-    const darkPref = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  
-    if (saved) {
-      setTheme(saved);
-    } else if (darkPref) {
-      setTheme("dark");
+    if (nextTheme) {
+      setTheme(nextTheme);
     }
-  }, []);
+  }, [nextTheme]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -46,9 +43,10 @@ export default function Page() {
   }, []);
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    localStorage.setItem("theme", theme);
-  }, [theme]);
+    if (theme && theme !== nextTheme && theme !== 'system') {
+      setNextTheme(theme);
+    }
+  }, [theme, nextTheme, setNextTheme]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -64,7 +62,11 @@ export default function Page() {
   const toggleSidebar = () =>
     setSidebarState((s) => (s === "expanded" ? "collapsed" : "expanded"));
   
-  const toggleTheme = () => setTheme((t) => (t === "light" ? "dark" : "light"));
+  const toggleTheme = () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    setNextTheme(newTheme);
+  };
 
   const handleSend = async (messageContent: string) => {
     if (!messageContent.trim() || isLoading) return;

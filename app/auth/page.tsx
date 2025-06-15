@@ -96,7 +96,7 @@ const AuthPage = () => {
     <div className={`flex min-h-screen w-full items-center justify-center px-4 ${theme === 'dark' ? 'bg-[#1C151A]' : 'bg-[#F2E1F4]'}`}>
       <div className={`w-full max-w-md rounded-xl p-8 shadow-2xl ${theme === 'dark' ? 'bg-[#211C26] border border-white/10' : 'bg-[#FBF5FA] border border-pink-300/20'}`}>
         <div>
-          <h2 className={`text-center !text-4xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+          <h2 className={`text-center !text-4xl !font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
             {isSignUp ? 'Create a New Account' : 'Welcome Back'}
           </h2>
         </div>
@@ -167,9 +167,7 @@ const AuthPage = () => {
               type="submit"
               disabled={isLoading}
               className={`flex w-full justify-center rounded-md px-3 py-2.5 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${
-                theme === 'dark'
-                  ? 'bg-pink-600 hover:bg-pink-700 focus-visible:outline-pink-500'
-                  : 'bg-pink-500 hover:bg-pink-600 focus-visible:outline-pink-600'
+                theme === 'dark' ? 'bg-radial from-[#5e183d] to-[#401020] text-[#f2c0d7] hover:from-[#8e486d] hover:to-[#6e284d]' : 'bg-[#aa3067] text-[#f2f0f7] hover:bg-[#ea70a7] hover:text-[#f2f0f7]'
               }`}
             >
               {isLoading ? 'Processing...' : (isSignUp ? 'Sign Up' : 'Sign In')}

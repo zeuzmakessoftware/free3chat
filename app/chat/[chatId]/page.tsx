@@ -7,6 +7,7 @@ import SidebarTrigger from "@/components/SidebarTrigger";
 import ChatArea from "@/components/ChatArea";
 import { models, type Model } from "@/lib/models";
 import { Message, Chat } from "@/types";
+import { useTheme } from "next-themes";
 
 export default function ChatPage() {
   const router = useRouter();
@@ -15,7 +16,8 @@ export default function ChatPage() {
   const chatId = params.chatId as string;
 
   const [sidebarState, setSidebarState] = useState<"expanded" | "collapsed">("expanded");
-  const [theme, setTheme] = useState("light");
+  const { theme: nextTheme, setTheme: setNextTheme } = useTheme();
+  const [theme, setTheme] = useState<string>("system");
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [anonymousId, setAnonymousId] = useState<string>('');
@@ -29,15 +31,29 @@ export default function ChatPage() {
   }, []);
 
   useEffect(() => {
-    const saved = localStorage.getItem("theme");
-    const darkPref = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    setTheme(saved || (darkPref ? "dark" : "light"));
-  }, []);
+    // Update our local state when the theme changes
+    if (nextTheme) {
+      setTheme(nextTheme);
+    }
+  }, [nextTheme]);
+
+  // Let next-themes handle the theme changes
+  useEffect(() => {
+    if (theme && theme !== nextTheme && theme !== 'system') {
+      setNextTheme(theme);
+    }
+  }, [theme, nextTheme, setNextTheme]);
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    localStorage.setItem("theme", theme);
-  }, [theme]);
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.metaKey && e.shiftKey && e.code === 'KeyO') {
+          e.preventDefault();
+          router.push('/');
+        }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [router]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -89,7 +105,11 @@ export default function ChatPage() {
   }, [fetchDataAndSendInitialPrompt]);
 
   const toggleSidebar = () => setSidebarState(s => s === "expanded" ? "collapsed" : "expanded");
-  const toggleTheme = () => setTheme(t => t === "light" ? "dark" : "light");
+  const toggleTheme = () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    setNextTheme(newTheme);
+  };
 
   const handleSendMessage = async (content: string) => {
     if (!content.trim()) return;

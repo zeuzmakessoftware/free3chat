@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { SparklesIcon, NewspaperIcon, CodeIcon, GraduationCapIcon } from '@/components/Icons';
 import { motion } from 'framer-motion';
+import { useSession } from 'next-auth/react';
 
 interface WelcomeScreenProps {
   theme: string;
@@ -44,6 +45,8 @@ export default function WelcomeScreen({ theme, setPrompt, isHome }: WelcomeScree
 
   const [activeTab, setActiveTab] = useState<keyof typeof options | null>(null);
   const questionsToShow = activeTab ? questionMap[activeTab] : initialQuestions;
+  const { data: session } = useSession();
+  const username = session?.user?.username;
 
   return (
     <motion.div
@@ -57,7 +60,7 @@ export default function WelcomeScreen({ theme, setPrompt, isHome }: WelcomeScree
         <div className="flex h-[calc(100vh-20rem)] p-7 items-start justify-center">
           <div className="w-full space-y-6 px-2 pt-[calc(max(15vh,2.5rem))] duration-300 animate-in fade-in-50 zoom-in-95 sm:px-8">
             <div role="heading" aria-level={2} className="text-3xl font-bold">
-              How can I help you?
+              {session ? `How can I help you, ${username?.split(' ')[0]}?` : `How can I help you?`}
             </div>
 
             <div className="flex flex-row flex-wrap gap-2.5 text-sm max-sm:justify-evenly">
