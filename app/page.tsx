@@ -50,6 +50,17 @@ export default function Page() {
     localStorage.setItem("theme", theme);
   }, [theme]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.metaKey && e.shiftKey && e.code === 'KeyO') {
+        e.preventDefault();
+        router.push('/');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [router]);
+
   const toggleSidebar = () =>
     setSidebarState((s) => (s === "expanded" ? "collapsed" : "expanded"));
   

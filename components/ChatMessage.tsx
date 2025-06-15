@@ -86,9 +86,10 @@ export function UserMessage({ message, theme, onRetry, onEdit }: UserMessageProp
 
 interface AIMessageProps extends MessageProps {
   isLoading: boolean;
+  modelName: string;
 }
 
-export function AIMessage({ message, theme, onRetry, isLoading }: AIMessageProps) {
+export function AIMessage({ message, theme, onRetry, isLoading, modelName }: AIMessageProps & { modelName: string }) {
   const { copied, copy } = useCopyToClipboard();
 
   return (
@@ -111,7 +112,12 @@ export function AIMessage({ message, theme, onRetry, isLoading }: AIMessageProps
             </div>
           )}
       </div>
-      {!isLoading && message.content && <ActionButtons onCopy={() => copy(message.content)} onRetry={onRetry} isUser={false} copied={copied} />}
+      {!isLoading && message.content && 
+      <div>
+      <p className="text-xs text-gray-500 dark:text-gray-400">{modelName}</p>
+      <ActionButtons onCopy={() => copy(message.content)} onRetry={onRetry} isUser={false} copied={copied} />
+      </div>
+      }
     </div>
   );
 }

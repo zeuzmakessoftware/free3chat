@@ -115,7 +115,7 @@ export default function ChatArea({
                 msg.role === 'user' ? (
                   <UserMessage key={msg.id} message={msg} theme={theme} onRetry={() => onRetry && onRetry(msg.id)} onEdit={(messageId, newContent) => onEdit && onEdit(messageId, newContent)} />
                 ) : (
-                  <AIMessage key={msg.id} message={msg} theme={theme} onRetry={() => {
+                  <AIMessage key={msg.id} message={msg} theme={theme} modelName={activeModel?.name || ''} onRetry={() => {
                       if (onRetry && index > 0 && messages[index - 1].role === 'user') {
                           onRetry(messages[index - 1].id);
                       }

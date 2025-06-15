@@ -1,5 +1,6 @@
-import { Settings2Icon, SunMoonIcon } from '@/components/Icons';
+import { Settings2Icon } from '@/components/Icons';
 import HoldTooltip from '@/components/HoldTooltip';
+import ThemeButton from '@/components/ThemeButton';
 
 interface TopRightControlsProps {
   onToggleTheme: () => void;
@@ -18,17 +19,7 @@ export default function TopRightControls({ onToggleTheme, sidebarState, theme }:
             </button>
           </a>
         </HoldTooltip>
-        <HoldTooltip tooltip="Theme" position="bottom" theme={theme}>
-          <button
-            className={`inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-muted/40 hover:text-foreground disabled:hover:bg-transparent disabled:hover:text-foreground/50 group relative size-8 hover:bg-black/10 ${theme === 'dark' ? 'hover:bg-black/30' : 'hover:bg-pink-500/10'}`}
-            tabIndex={-1}
-            onClick={onToggleTheme}
-            data-state="closed"
-          >
-            <SunMoonIcon className="absolute size-4" />
-            <span className="sr-only">Toggle theme</span>
-          </button>
-        </HoldTooltip>
+        <ThemeButton theme={theme} onToggleTheme={onToggleTheme} />
       </div>
     </div>
   );

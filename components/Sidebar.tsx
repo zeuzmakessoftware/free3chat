@@ -1,4 +1,3 @@
-// components/Sidebar.tsx
 'use client';
 
 import { SearchIcon, LogInIcon, XIcon } from '@/components/Icons';
