@@ -264,13 +264,29 @@ export default function ModelPickerModal({
 
   if (!isOpen) return null;
 
-    const commonFooterProps = { favoriteMode, setFavoriteMode, isFilterOpen, setIsFilterOpen, selectedFilters, setSelectedFilters, theme };
+  const commonFooterProps = { favoriteMode, setFavoriteMode, isFilterOpen, setIsFilterOpen, selectedFilters, setSelectedFilters, theme };
 
-    if (favoriteMode) {
-        return (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.2 }} ref={modalRef} className={`absolute bottom-full left-0 mb-2 z-[9999] pointer-events-auto`}>
-                <div className={`w-[420px] px-4 py-2 rounded-lg ${theme === "dark" ? "bg-[#100A0E] text-white" : "bg-white text-black"} border ${theme === "dark" ? "border-neutral-700" : "border-neutral-300"} shadow-2xl pointer-events-auto`} onClick={(e) => e.stopPropagation()}>
-                    <SearchInput searchQuery={searchQuery} setSearchQuery={setSearchQuery} theme={theme} />
+  return (
+    <motion.div
+        ref={modalRef}
+        layout
+        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+        transition={{ type: "spring", stiffness: 400, damping: 40 }}
+        className={`absolute bottom-full left-0 mb-2 z-[9999] pointer-events-auto`}
+        onClick={(e) => e.stopPropagation()}
+    >
+        <div className={`
+            px-4 py-2 rounded-lg shadow-2xl flex flex-col pointer-events-auto
+            ${favoriteMode ? 'w-[420px]' : 'w-[600px]'}
+            ${theme === "dark" ? "bg-[#100A0E] text-white border-neutral-700" : "bg-white text-black border-neutral-300"}
+            border
+        `}>
+            <SearchInput searchQuery={searchQuery} setSearchQuery={setSearchQuery} theme={theme} />
+            
+            {favoriteMode ? (
+                <>
                     <UpgradeCard theme={theme} />
                     <div className="max-h-[45vh] overflow-y-auto pr-1">
                         {favoriteModels.map((model) => (
@@ -283,26 +299,20 @@ export default function ModelPickerModal({
                                 onSelectModel={() => onSelect(model)}
                             />
                         ))}
-                         {favoriteModels.length === 0 && <p className={`text-sm ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} text-center py-4`}>No favorite models match your search/filters.</p>}
+                        {favoriteModels.length === 0 && <p className={`text-sm ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} text-center py-4`}>No favorite models match your search/filters.</p>}
                     </div>
-                    <ModalFooter {...commonFooterProps} />
-                </div>
-            </motion.div>
-        );
-    }
-
-    return (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.2 }} ref={modalRef} className={`absolute bottom-full left-0 mb-2 z-[9999] pointer-events-auto`}>
-             <div className={`w-[600px] px-4 py-2 rounded-lg ${theme === "dark" ? "!bg-[#100A0E] text-white" : "!bg-white text-black"} border ${theme === "dark" ? "border-neutral-700" : "border-neutral-300"} shadow-2xl flex flex-col pointer-events-auto`} onClick={(e) => e.stopPropagation()}>
-                <SearchInput searchQuery={searchQuery} setSearchQuery={setSearchQuery} theme={theme} />
+                </>
+            ) : (
                 <div className="overflow-y-auto h-[70vh] pr-1 flex-grow">
                     <UpgradeCard theme={theme} />
                     <ModelGridSection title="Favorites" models={favoriteModels} theme={theme} currentModelName={current.name} onSelectModel={onSelect} />
                     <ModelGridSection title="Others" models={otherModels} theme={theme} currentModelName={current.name} onSelectModel={onSelect} />
                     {filteredModels.length === 0 && <p className={`text-sm ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} text-center py-8`}>No models match your search/filters.</p>}
                 </div>
-                <ModalFooter {...commonFooterProps} />
-            </div>
-        </motion.div>
-    );
+            )}
+            
+            <ModalFooter {...commonFooterProps} />
+        </div>
+    </motion.div>
+  );
 }

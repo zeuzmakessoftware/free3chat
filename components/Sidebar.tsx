@@ -187,7 +187,7 @@ export default function Sidebar({ sidebarState, theme, currentChatId }: SidebarP
                   <CgProfile size={24} className={theme === 'dark' ? 'text-white' : 'text-black'} />
                   <div className="flex flex-col">
                     <p className={`text-sm font-semibold ${theme === 'dark' ? 'text-white' : 'text-black'}`}>{session.user?.username || 'User'}</p>
-                    <p className={`text-xs ${theme === 'dark' ? 'text-white/70' : 'text-black/70'}`}>Free Plan</p>
+                    <p className={`text-xs ${theme === 'dark' ? 'text-white/70' : 'text-black/70'}`}>Clone Plan</p>
                   </div>
                 </button>
               ) : (
