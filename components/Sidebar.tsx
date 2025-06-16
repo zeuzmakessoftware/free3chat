@@ -180,16 +180,16 @@ export default function Sidebar({ sidebarState, theme, currentChatId }: SidebarP
           </>
         </div>
 
-        <div className="p-2 border-t border-white/5">
+        <div className="p-5">
             <div className={`flex items-center rounded-lg ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-black/5'} transition-colors`}>
               {session ? (
-                <button className="flex items-center gap-3 w-full px-2 py-2 text-left">
+                <Link href="/settings" className="flex items-center gap-3 w-full px-2 py-2 text-left">
                   <CgProfile size={24} className={theme === 'dark' ? 'text-white' : 'text-black'} />
                   <div className="flex flex-col">
                     <p className={`text-sm font-semibold ${theme === 'dark' ? 'text-white' : 'text-black'}`}>{session.user?.username || 'User'}</p>
                     <p className={`text-xs ${theme === 'dark' ? 'text-white/70' : 'text-black/70'}`}>Clone Plan</p>
                   </div>
-                </button>
+                </Link>
               ) : (
                 <button onClick={() => window.location.href = "/auth"} className={`flex items-center gap-3 w-full p-3 rounded-lg font-semibold ${theme === 'dark' ? 'text-[#f2c0d7]' : 'text-[#ba4077]'}`}>
                   <LogInIcon className="h-5 w-5" /> 
