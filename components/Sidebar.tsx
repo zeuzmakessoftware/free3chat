@@ -117,7 +117,27 @@ export default function Sidebar({ sidebarState, theme, currentChatId }: SidebarP
             <HoldTooltip tooltip="" shortcut={["⌘", "Shift", "O"]} position="right" theme={theme} className="w-full">
               <button
                 onClick={() => router.push('/')}
-                className={`w-full flex border !border-[#3e183d]/50 ${theme === 'dark' ? 'bg-radial from-[#5e183d] to-[#401020] text-[#f2c0d7] hover:from-[#8e486d] hover:to-[#6e284d]' : 'bg-[#aa3067] text-[#f2f0f7] hover:bg-[#ea70a7] hover:text-[#f2f0f7]'} items-center justify-center rounded-md px-4 py-2 font-bold text-sm transition`}
+                className={`w-full flex border !border-[#3e183d]/50 items-center justify-center rounded-md px-4 py-2 font-bold text-sm transition ${theme === 'dark' ? 'text-[#f2c0d7]' : 'text-[#f2f0f7]'}`}
+                style={{
+                  background: theme === 'dark' 
+                    ? 'radial-gradient(circle at center, #5e183d, #401020)'
+                    : '#aa3067',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseOver={(e) => {
+                  if (theme === 'dark') {
+                    e.currentTarget.style.background = 'radial-gradient(circle at center, #8e486d, #6e284d)';
+                  } else {
+                    e.currentTarget.style.background = '#ea70a7';
+                  }
+                }}
+                onMouseOut={(e) => {
+                  if (theme === 'dark') {
+                    e.currentTarget.style.background = 'radial-gradient(circle at center, #5e183d, #401020)';
+                  } else {
+                    e.currentTarget.style.background = '#aa3067';
+                  }
+                }}
               >
                 <span>New Chat</span>
               </button>
