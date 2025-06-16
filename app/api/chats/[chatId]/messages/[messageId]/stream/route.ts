@@ -29,7 +29,7 @@ interface GroqHistoryItem {
 type ChatHistoryItem = GoogleHistoryItem | GroqHistoryItem;
 
 const modelMapping: Record<string, { provider: 'google' | 'groq'; name: string }> = {
-  'gemini-2-5-flash': { provider: 'google', name: 'gemini-2.5-flash' },
+  'gemini-2-5-flash': { provider: 'google', name: 'gemini-2.5-flash-preview-05-20' },
   'llama-3-3-70b': { provider: 'groq', name: 'llama-3.3-70b-versatile' },
   'llama-4-maverick': { provider: 'groq', name: 'meta-llama/llama-4-maverick-17b-128e-instruct' },
   'qwen-qwq-32b': { provider: 'groq', name: 'qwen-qwq-32b' },

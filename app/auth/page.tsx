@@ -3,6 +3,8 @@
 import { useState, FormEvent, useEffect } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
 
 const AuthPage = () => {
   const [isSignUp, setIsSignUp] = useState(false)
@@ -93,7 +95,15 @@ const AuthPage = () => {
   }`;
 
   return (
-    <div className={`flex min-h-screen w-full items-center justify-center px-4 ${theme === 'dark' ? 'bg-[#1C151A]' : 'bg-[#F2E1F4]'}`}>
+    <div className={`${theme === 'dark' ? 'bg-[#1C151A]' : 'bg-[#F2E1F4]'}`}>
+    <div className="fixed top-4 left-6">
+        <Link href="/" className="flex gap-2 items-center hover:bg-pink-500/20 cursor-pointer rounded-md py-2 px-4 transition-all duration-300">
+            <ArrowLeft size={15} />
+            <button className="font-semibold text-sm">Back to Chat</button>
+        </Link>
+        <></>
+    </div>
+    <div className={`flex min-h-screen w-full items-center justify-center px-4`}>
       <div className={`w-full max-w-md rounded-xl p-8 shadow-2xl ${theme === 'dark' ? 'bg-[#211C26] border border-white/10' : 'bg-[#FBF5FA] border border-pink-300/20'}`}>
         <div>
           <h2 className={`text-center !text-4xl !font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
@@ -190,6 +200,7 @@ const AuthPage = () => {
           </button>
         </div>
       </div>
+    </div>
     </div>
   )
 }

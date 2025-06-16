@@ -161,7 +161,7 @@ export default function Sidebar({ sidebarState, theme, currentChatId }: SidebarP
                       href={`/chat/${chat.id}`} 
                       className={`block rounded-lg px-3 py-2 text-sm transition-colors ${chat.id === currentChatId 
                         ? theme === 'dark' 
-                          ? 'bg-[#3e183d] text-[#f2c0d7]' 
+                          ? 'bg-white/10 text-[#f2c0d7]' 
                           : 'bg-[#e2a0c7] text-[#7a2a50]'
                         : theme === 'dark'
                           ? 'text-[#d8a0b7] hover:bg-[#2a1a24]'

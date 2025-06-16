@@ -39,7 +39,7 @@ const SettingsPage = () => {
         style={{
             background: theme === 'dark'
                 ? 'linear-gradient(to bottom, #1E141A, #0E040A)'
-                : 'linear-gradient(to bottom, white, #fecdd3)'
+                : 'linear-gradient(to bottom, #FFECFF, #EFDCF5)'
         }}
     >
         <div className="flex justify-between gap-2 w-full px-24 py-6">
@@ -82,22 +82,22 @@ const SettingsPage = () => {
                 <h2 className="!text-2xl !font-bold my-4">Customize Open Source T3 Chat</h2>
                 <div className="my-4">
                     <p className="font-semibold my-4">What should T3 Chat call you?</p>
-                    <input className={`pr-6 text-sm  border border-pink-500/50 w-full p-2 rounded-md bg-pink-500/5 ${theme === 'dark' ? '!placeholder-neutral-100/70' : '!placeholder-pink-800/70'}`} type="text" placeholder="Enter your name" />
+                    <input className={`pr-6 text-sm  border border-pink-500 w-full p-2 rounded-md bg-pink-500/5 ${theme === 'dark' ? '!placeholder-neutral-100/70' : '!placeholder-pink-800/70'}`} type="text" placeholder="Enter your name" />
                 </div>
                 <div className="my-4">
                     <p className="font-semibold my-4">What do you do?</p>
-                    <input className={`pr-6 text-sm  border border-pink-500/50 w-full p-2 rounded-md bg-pink-500/5 ${theme === 'dark' ? '!placeholder-neutral-100/70' : '!placeholder-pink-800/70'}`} type="text" placeholder="Engineer, student, etc." />
+                    <input className={`pr-6 text-sm  border border-pink-500 w-full p-2 rounded-md bg-pink-500/5 ${theme === 'dark' ? '!placeholder-neutral-100/70' : '!placeholder-pink-800/70'}`} type="text" placeholder="Engineer, student, etc." />
                 </div>
                 <div className="my-4">
                     <p className="font-semibold my-4">What traits should T3 Chat have? (up to 50, max 100 chars each)</p>
-                    <input className={`pr-6 text-sm  border border-pink-500/50 w-full p-2 rounded-md bg-pink-500/5 ${theme === 'dark' ? '!placeholder-neutral-100/70' : '!placeholder-pink-800/70'}`} type="text" placeholder="Type a trait and press Enter or tab" />
+                    <input className={`pr-6 text-sm  border border-pink-500 w-full p-2 rounded-md bg-pink-500/5 ${theme === 'dark' ? '!placeholder-neutral-100/70' : '!placeholder-pink-800/70'}`} type="text" placeholder="Type a trait and press Enter or tab" />
                 </div>
                 <div className="my-4">
                     <p className="font-semibold my-4">Anything else T3 Chat should know about you?</p>
-                    <textarea className={`pr-6 text-sm border border-pink-500/50 w-full p-2 rounded-md bg-pink-500/5 ${theme === 'dark' ? '!placeholder-neutral-100/70' : '!placeholder-pink-800/70'}`} placeholder="Interests, values, or preferences to keep in mind" />
+                    <textarea className={`pr-6 text-sm border border-pink-500 w-full p-2 rounded-md bg-pink-500/5 ${theme === 'dark' ? '!placeholder-neutral-100/70' : '!placeholder-pink-800/70'}`} placeholder="Interests, values, or preferences to keep in mind" />
                 </div>
                 <div className="flex justify-end">
-                    <button className="border border-pink-500/20 bg-pink-500/20 rounded-md p-2 my-2">Save Preference</button>
+                    <button className="border border-pink-500/20 bg-pink-500 rounded-md p-2 my-2">Save Preference</button>
                 </div>
                 <h2 className="!text-2xl !font-bold my-4">Visual Options</h2>
                 <div className="mb-24">
