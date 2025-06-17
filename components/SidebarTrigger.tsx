@@ -1,3 +1,4 @@
+// components/SidebarTrigger.tsx
 import { PanelLeftIcon, SearchIcon, PlusIcon } from '@/components/Icons';
 import { motion } from 'framer-motion';
 
@@ -5,9 +6,10 @@ interface SidebarTriggerProps {
   onToggle: () => void;
   sidebarState: 'expanded' | 'collapsed';
   theme: string;
+  onSearchClick: () => void;
 }
 
-export default function SidebarTrigger({ onToggle, sidebarState, theme }: SidebarTriggerProps) {
+export default function SidebarTrigger({ onToggle, sidebarState, theme, onSearchClick }: SidebarTriggerProps) {
   const isExpanded = sidebarState === 'expanded';
   
   const iconVariants = {
@@ -41,6 +43,7 @@ export default function SidebarTrigger({ onToggle, sidebarState, theme }: Sideba
         animate={isExpanded ? 'expanded' : 'collapsed'}
         custom={1}
         initial={false}
+        onClick={onSearchClick}
       >
         <SearchIcon />
         <span className="sr-only">Search</span>

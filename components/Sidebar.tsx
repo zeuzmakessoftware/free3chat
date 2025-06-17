@@ -113,7 +113,7 @@ export default function Sidebar({ sidebarState, theme, currentChatId }: SidebarP
         {isExpanded && (
           <>
         <header className="flex items-center justify-center px-4 py-4 border-b border-white/5">
-          <h1 className={`text-xl font-bold ${theme === 'dark' ? 'text-[#f2c0d7]' : 'text-[#ba4077]'}`}>OST3.chat</h1>
+          <h1 className={`text-xl font-bold ${theme === 'dark' ? 'text-[#f2c0d7]' : 'text-[#ba4077]'}`}>Free3 chat</h1>
         </header>
 
         <div className="flex-1 px-4 py-2 space-y-4 overflow-y-auto">
@@ -211,7 +211,7 @@ export default function Sidebar({ sidebarState, theme, currentChatId }: SidebarP
                   <CgProfile size={24} className={theme === 'dark' ? 'text-white' : 'text-black'} />
                   <div className="flex flex-col">
                     <p className={`text-sm font-semibold ${theme === 'dark' ? 'text-white' : 'text-black'}`}>{session.user?.username || 'User'}</p>
-                    <p className={`text-xs ${theme === 'dark' ? 'text-white/70' : 'text-black/70'}`}>Clone Plan</p>
+                    <p className={`text-xs ${theme === 'dark' ? 'text-white/70' : 'text-black/70'}`}>Free Plan</p>
                   </div>
                 </Link>
               ) : (

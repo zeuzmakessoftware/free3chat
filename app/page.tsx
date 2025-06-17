@@ -8,6 +8,7 @@ import ChatArea from "@/components/ChatArea";
 import { models, type Model } from "@/lib/models";
 import { useTheme } from "next-themes";
 import { useFont } from "@/components/FontProvider";
+import SearchModal from "@/components/SearchModal";
 
 export default function Page() {
   const router = useRouter();
@@ -17,6 +18,7 @@ export default function Page() {
   const [firstPrompt, setFirstPrompt] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [anonymousId, setAnonymousId] = useState<string>('');
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const { font, setFont } = useFont();
   
   const [activeModel, setActiveModel] = useState<Model>(() => models.find(m => m.active) || models[0]);
@@ -58,6 +60,14 @@ export default function Page() {
         e.preventDefault();
         router.push('/');
       }
+      else if (e.metaKey && e.code === 'KeyK') {
+        e.preventDefault();
+        setIsSearchModalOpen(true);
+      }
+      else if (e.metaKey && e.code === 'KeyB') {
+        e.preventDefault();
+        setSidebarState((s) => (s === "expanded" ? "collapsed" : "expanded"));
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -96,6 +106,11 @@ export default function Page() {
 
   return (
     <div className={`relative flex h-screen w-full ${theme === 'dark' ? 'bg-[#1C151A]' : 'bg-[#F2E1F4]'}`}>
+      <SearchModal 
+        isOpen={isSearchModalOpen}
+        onClose={() => setIsSearchModalOpen(false)}
+        theme={theme}
+      />
       <div className="relative">
         <Sidebar 
           sidebarState={sidebarState} 
@@ -106,7 +121,7 @@ export default function Page() {
 
       <div className={`flex-1 flex flex-col transition-all duration-300 relative ${sidebarState === "expanded" ? "md:ml-64" : ""}`}>
         <div className="relative">
-          <SidebarTrigger onToggle={toggleSidebar} sidebarState={sidebarState} theme={theme} />
+          <SidebarTrigger onToggle={toggleSidebar} sidebarState={sidebarState} theme={theme} onSearchClick={() => setIsSearchModalOpen(true)} />
         </div>
         <div className="relative flex-1 min-h-0">
           <ChatArea 

@@ -26,7 +26,7 @@ export const rawModels: Record<string, Omit<Model, "id">> = {
   "Gemini 2.0 Flash": { name: "Gemini 2.0 Flash", logo: GeminiIcon, info: "Google's stable Flash model", capabilities: ["vision", "web", "pdf"], favorite: false, premium: false, active: false },
   "Gemini 2.0 Flash Lite": { name: "Gemini 2.0 Flash Lite", logo: GeminiIcon, info: "Lightweight Flash variant", capabilities: ["vision", "pdf"], favorite: false, premium: false, active: false },
   "Gemini 2.5 Flash (Thinking)": { name: "Gemini 2.5 Flash", logo: GeminiIcon, info: "(Thinking)", capabilities: ["vision", "web", "pdf"], favorite: false, premium: false, active: false },
-  "GPT 4o-mini": { name: "GPT 4o-mini", logo: OpenAIIcon, info: "OpenAI’s compact 4.0 model", capabilities: ["vision"], favorite: false, premium: false, active: true },
+  "GPT 4o-mini": { name: "GPT 4o-mini", logo: OpenAIIcon, info: "OpenAI’s compact 4.0 model", capabilities: ["vision"], favorite: false, premium: false, active: false },
   "GPT 4o": { name: "GPT 4o", logo: OpenAIIcon, info: "OpenAI’s standard 4.0", capabilities: ["vision"], favorite: false, premium: false, active: false },
   "GPT 4.1": { name: "GPT 4.1", logo: OpenAIIcon, info: "Next-gen 4.1 model", capabilities: ["vision"], favorite: false, premium: false, active: false },
   "GPT 4.1 Mini": { name: "GPT 4.1 Mini", logo: OpenAIIcon, info: "Slim 4.1 variant", capabilities: ["vision"], favorite: false, premium: false, active: false },
