@@ -130,7 +130,7 @@ const SettingsPage = () => {
             </aside>
 
             <main className={`w-[70%] h-full overflow-y-auto px-8 max-md:w-[100%]`}>
-                <h2 className="!text-2xl !font-bold my-4">Customize Free3 Chat</h2>
+                {/* <h2 className="!text-2xl !font-bold my-4">Customize Free3 Chat</h2> I don't got time to finish this lmao
                 <div className="my-4">
                     <p className="font-semibold my-4">What should Free3 Chat call you?</p>
                     <input className={`pr-6 text-sm  border border-pink-500 w-full p-2 rounded-md bg-pink-500/5 ${theme === 'dark' ? '!placeholder-neutral-100/70' : '!placeholder-pink-800/70'}`} type="text" placeholder="Enter your name" />
@@ -149,7 +149,7 @@ const SettingsPage = () => {
                 </div>
                 <div className="flex justify-end">
                     <button className="border border-pink-500/20 bg-pink-500 rounded-md p-2 my-2">Save Preference</button>
-                </div>
+                </div> */}
                 <h2 className="!text-2xl !font-bold my-4">Visual Options</h2>
                 <div className="mb-24">
                     <div className="mb-6">

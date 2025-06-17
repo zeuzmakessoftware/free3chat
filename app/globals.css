@@ -824,9 +824,10 @@ body {
     border-top-color: transparent
 }
 
-#chat-input:focus,
+#chat-input, #chat-input:focus,
 #chat-input:focus-visible, #threads:focus-visible, #threads:focus, #search-input:focus-visible, #search-input:focus {
 outline: none !important;
 box-shadow: none !important;
 border-color: transparent !important;
+resize: none !important;
 }
