@@ -10,7 +10,7 @@ export default function ThemeButton({ theme, onToggleTheme }: { theme: string; o
       onClick={onToggleTheme}
       data-state="closed"
   >
-    <SunMoonIcon className="absolute size-4" />
+    <SunMoonIcon className="size-4" />
     <span className="sr-only">Toggle theme</span>
   </button>
   </HoldTooltip>

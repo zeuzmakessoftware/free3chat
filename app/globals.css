@@ -133,7 +133,8 @@
 
 body {
     margin: 0;
-    line-height: inherit
+    line-height: inherit;
+    filter: hue-rotate(var(--hue-rotation)) contrast(var(--contrast-value)) saturate(var(--saturation-value));
 }
 
 hr {
@@ -280,6 +281,9 @@ img,video {
 }
 
 :root {
+    --hue-rotation: 0deg;
+    --contrast-value: 100%;
+    --saturation-value: 100%;
     --background: 293.7 46.3% 92%;
     --foreground: 296 56% 21%;
     --card: 291 54% 97%;

@@ -182,7 +182,7 @@ export default function Sidebar({ sidebarState, theme, currentChatId }: SidebarP
                           e.stopPropagation();
                           setChatToDelete(chat);
                       }}
-                      className={`absolute right-2 top-[79%] -translate-y-1/2 p-1 rounded-full opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity ${
+                      className={`absolute right-2 top-[16%] -translate-y-1/2 p-1 rounded-full opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity ${
                         theme === 'dark' ? 'text-white/80 hover:bg-white/10' : 'text-black/80 hover:bg-black/10'
                       }`}
                       title="Delete chat"
