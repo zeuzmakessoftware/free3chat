@@ -7,6 +7,7 @@ import SidebarTrigger from "@/components/SidebarTrigger";
 import ChatArea from "@/components/ChatArea";
 import { models, type Model } from "@/lib/models";
 import { useTheme } from "next-themes";
+import { useFont } from "@/components/FontProvider";
 
 export default function Page() {
   const router = useRouter();
@@ -16,6 +17,7 @@ export default function Page() {
   const [firstPrompt, setFirstPrompt] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [anonymousId, setAnonymousId] = useState<string>('');
+  const { font, setFont } = useFont();
   
   const [activeModel, setActiveModel] = useState<Model>(() => models.find(m => m.active) || models[0]);
 
@@ -29,6 +31,8 @@ export default function Page() {
       setTheme(nextTheme);
     }
   }, [nextTheme]);
+
+
 
   useEffect(() => {
     const handleResize = () => {
@@ -116,6 +120,8 @@ export default function Page() {
             isHome={true}
             activeModel={activeModel}
             onModelSelect={setActiveModel}
+            font={font}
+            setFont={setFont}
           />
         </div>
       </div>

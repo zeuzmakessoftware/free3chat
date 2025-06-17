@@ -14,3 +14,5 @@ export interface Chat {
     created_at: string;
     updated_at: string;
 } 
+
+export type AppFont = 'proxima-nova' | 'inter' | 'comic-sans';

@@ -7,6 +7,8 @@ import { ArrowLeft } from "lucide-react";
 import ThemeButton from "@/components/ThemeButton";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { AppFont } from "@/types";
+import { useFont } from "@/components/FontProvider";
 
 const ShortcutFormat = (shortcut: string) => {
     return <span className="flex gap-2">
@@ -20,10 +22,12 @@ const SettingsPage = () => {
     const { theme, setTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
     const { data: session, status } = useSession();
+    const { font: selectedFont, setFont: setSelectedFont } = useFont(); // Use the global font context
 
     useEffect(() => {
         setMounted(true);
     }, []);
+
 
     if (!mounted) {
         return null;
@@ -31,6 +35,12 @@ const SettingsPage = () => {
 
     const toggleTheme = () => {
         setTheme(theme === "light" ? "dark" : "light");
+    };
+
+    const handleFontChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const newFont = e.target.value as AppFont;
+        setSelectedFont(newFont);
+        // The page will automatically reload due to our useFont hook implementation
     };
 
     return ( 
@@ -49,7 +59,14 @@ const SettingsPage = () => {
             </Link>
             <div className="flex gap-2 items-center">
                 <ThemeButton theme={theme || 'system'} onToggleTheme={toggleTheme} />
-                <button className="font-semibold text-sm">Sign Out</button>
+                {/* Placeholder for Sign Out button for now */}
+                {/* For production, this would likely be a proper logout button */}
+                <button 
+                  onClick={() => { /* Implement sign out logic, e.g., signOut() from next-auth */ }}
+                  className="font-semibold text-sm"
+                >
+                  Sign Out
+                </button>
             </div>
         </div>
 
@@ -103,11 +120,23 @@ const SettingsPage = () => {
                 <div className="mb-24">
                     <p className="font-semibold">Main Text Font</p>
                     <p className="opacity-50">Used in general text throughout the app.</p>
-                    <select className={`border my-2 border-pink-500/20 w-full p-2 rounded-md bg-pink-500/5 ${theme === 'dark' ? '!placeholder-neutral-100' : '!placeholder-pink-800'}`}>
-                        <option value="system">Proxima Vara (default)</option>
-                        <option value="sans">Inter</option>
-                        <option value="serif">Comic Sans MS</option>
+                    <select 
+                        className={`border my-2 border-pink-500/20 w-full p-2 rounded-md bg-pink-500/5 ${theme === 'dark' ? '!placeholder-neutral-100' : '!placeholder-pink-800'}`}
+                        value={selectedFont}
+                        onChange={handleFontChange}
+                    >
+                        <option value="proxima-nova">Proxima Nova (Default)</option>
+                        <option value="inter">Inter</option>
+                        <option value="comic-sans">Comic Sans MS</option>
                     </select>
+                    <div className="mt-4">
+                        <p className="font-semibold mb-2">Font Preview:</p>
+                        <div className={`p-3 rounded-md ${theme === 'dark' ? 'bg-black/30' : 'bg-white/70'} border border-pink-500/20`}>
+                            <p className="mb-2">This is how your selected font looks.</p>
+                            <p className="font-bold">Bold text in {selectedFont === 'proxima-nova' ? 'Proxima Nova' : selectedFont === 'inter' ? 'Inter' : 'Comic Sans MS'}.</p>
+                            <p className="italic">Italic text in {selectedFont === 'proxima-nova' ? 'Proxima Nova' : selectedFont === 'inter' ? 'Inter' : 'Comic Sans MS'}.</p>
+                        </div>
+                    </div>
                 </div>
             </main>
         </div>

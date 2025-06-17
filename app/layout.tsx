@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { Inter, Comic_Neue } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
+import "./font-styles.css";
 import { Providers } from "@/components/providers";
+import { FontProvider } from "@/components/FontProvider";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const comicNeue = Comic_Neue({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-comic-sans" });
 
 const proximaNova = localFont({
   src: [
@@ -42,12 +48,37 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            (function() {
+              try {
+                const storedFont = localStorage.getItem('app-font');
+                let fontFamily = '"Proxima Nova", sans-serif';
+                
+                if (storedFont === 'inter') {
+                  fontFamily = 'Inter, sans-serif';
+                } else if (storedFont === 'comic-sans') {
+                  fontFamily = '"Comic Sans MS", "Comic Neue", cursive';
+                }
+                
+                document.documentElement.style.setProperty('--app-font', fontFamily);
+              } catch (e) {
+                console.error('Error setting initial font:', e);
+              }
+            })();
+          `
+        }} />
+      </head>
       <body
-        className={`${proximaNova.variable} font-sans antialiased`}
+        className={`${proximaNova.variable} ${inter.variable} ${comicNeue.variable} font-sans antialiased`}
+        style={{ fontFamily: 'var(--app-font)' }}
       >
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <Providers>
-            {children}
+            <FontProvider>
+              {children}
+            </FontProvider>
           </Providers>
         </ThemeProvider>
       </body>

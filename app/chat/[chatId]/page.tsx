@@ -8,6 +8,7 @@ import ChatArea from "@/components/ChatArea";
 import { models, type Model } from "@/lib/models";
 import { Message, Chat } from "@/types";
 import { useTheme } from "next-themes";
+import { useFont } from "@/components/FontProvider";
 
 export default function ChatPage() {
   const router = useRouter();
@@ -22,6 +23,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [anonymousId, setAnonymousId] = useState<string>('');
   const [activeModel, setActiveModel] = useState<Model | null>(null);
+  const { font, setFont } = useFont(); // Use the global font context
 
   const initialPromptHandled = useRef(false);
 
@@ -31,18 +33,19 @@ export default function ChatPage() {
   }, []);
 
   useEffect(() => {
-    // Update our local state when the theme changes
     if (nextTheme) {
       setTheme(nextTheme);
     }
   }, [nextTheme]);
 
-  // Let next-themes handle the theme changes
   useEffect(() => {
     if (theme && theme !== nextTheme && theme !== 'system') {
       setNextTheme(theme);
     }
   }, [theme, nextTheme, setNextTheme]);
+
+
+
 
   useEffect(() => {
       const handleKeyDown = (e: KeyboardEvent) => {
@@ -219,6 +222,8 @@ export default function ChatPage() {
             isHome={false}
             activeModel={activeModel || undefined}
             onModelSelect={() => {}}
+            font={font}
+            setFont={setFont}
           />
         </div>
       </div>

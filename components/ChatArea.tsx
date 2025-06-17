@@ -8,6 +8,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Message } from '@/types';
 import { AIMessage, UserMessage } from './ChatMessage';
 import { ChevronDownIcon } from './Icons';
+import { AppFont } from "@/types";
 
 interface ChatAreaProps {
   onToggleTheme: () => void;
@@ -23,6 +24,8 @@ interface ChatAreaProps {
   isHome?: boolean;
   activeModel?: Model;
   onModelSelect?: (model: Model) => void;
+  font?: AppFont;
+  setFont?: (font: AppFont) => void;
 }
 
 export default function ChatArea({ 
@@ -39,6 +42,8 @@ export default function ChatArea({
   isHome,
   activeModel,
   onModelSelect,
+  font,
+  setFont,
 }: ChatAreaProps) {
   const [input, setInput] = useState('');
   const [showScrollButton, setShowScrollButton] = useState(false);
@@ -87,7 +92,6 @@ export default function ChatArea({
             <TopRightCurve theme={theme} />
           )}
         </div>
-        {/* Pass down activeModel and onModelSelect */}
         {activeModel && onModelSelect && (
           <ChatInput 
             theme={theme} 

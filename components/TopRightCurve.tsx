@@ -42,7 +42,7 @@ const CurveSvg = ({ theme }: TopRightCurveProps) => (
 export default function TopRightCurve({ theme }: TopRightCurveProps) {
   return (
     <div
-      className="group pointer-events-none absolute top-[0.92em] z-10 -mb-8 h-32 w-full origin-top transition-all ease-snappy"
+      className="group pointer-events-none absolute top-[1em] z-10 -mb-8 h-32 w-full origin-top transition-all ease-snappy"
     >
       <CurveSvg theme={theme} />
     </div>

@@ -1,0 +1,23 @@
+/* Font styles for the application */
+:root {
+  font-family: var(--app-font);
+}
+
+body, 
+h1, h2, h3, h4, h5, h6, 
+p, span, div, 
+button, input, textarea, select {
+  font-family: inherit;
+}
+
+.font-proxima-nova {
+  font-family: "Proxima Nova", sans-serif;
+}
+
+.font-inter {
+  font-family: Inter, sans-serif;
+}
+
+.font-comic-sans {
+  font-family: "Comic Sans MS", "Comic Neue", cursive;
+}
