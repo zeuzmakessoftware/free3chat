@@ -71,27 +71,31 @@ export default function Sidebar({ sidebarState, theme, currentChatId }: SidebarP
     };
   }, [loadChats]);
 
-  const handleDeleteConfirm = async () => {
+  const handleDeleteConfirm = () => {
     if (!chatToDelete) return;
-
-    try {
-      if (session) {
-        await fetch(`/api/chats/${chatToDelete.id}`, { method: 'DELETE' });
-      } else {
-        deleteLocalChat(chatToDelete.id);
-      }
-      
-      if (currentChatId === chatToDelete.id) {
-        router.push('/');
-      }
-
+    const id = chatToDelete.id;
+  
+    setChats(prev => prev.filter(c => c.id !== id));
+    setChatToDelete(null);
+  
+    if (currentChatId === id) {
+      router.push('/');
+    }
+  
+    if (session) {
+      fetch(`/api/chats/${id}`, { method: 'DELETE' })
+        .catch(err => {
+          console.error('Failed to delete chat on server:', err);
+        })
+        .finally(() => {
+          window.dispatchEvent(new CustomEvent('chats-updated'));
+        });
+    } else {
+      deleteLocalChat(id);
       window.dispatchEvent(new CustomEvent('chats-updated'));
-    } catch (error) {
-      console.error("Failed to delete chat:", error);
-    } finally {
-      setChatToDelete(null);
     }
   };
+  
 
   const filteredChats = searchQuery
     ? chats.filter(chat => chat.title.toLowerCase().includes(searchQuery.toLowerCase()))
