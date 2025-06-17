@@ -8,7 +8,6 @@ import ChatArea from "@/components/ChatArea";
 import { models, type Model } from "@/lib/models";
 import { Message, Chat } from "@/types";
 import { useTheme } from "next-themes";
-import { useFont } from "@/components/FontProvider";
 import SearchModal from "@/components/SearchModal";
 
 export default function ChatPage() {
@@ -25,7 +24,6 @@ export default function ChatPage() {
   const [anonymousId, setAnonymousId] = useState<string>('');
   const [activeModel, setActiveModel] = useState<Model | null>(null);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-  const { font, setFont } = useFont();
 
   const initialPromptHandled = useRef(false);
 
@@ -237,8 +235,6 @@ export default function ChatPage() {
             isHome={false}
             activeModel={activeModel || undefined}
             onModelSelect={() => {}}
-            font={font}
-            setFont={setFont}
           />
         </div>
       </div>

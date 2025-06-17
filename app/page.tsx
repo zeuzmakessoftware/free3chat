@@ -7,7 +7,6 @@ import SidebarTrigger from "@/components/SidebarTrigger";
 import ChatArea from "@/components/ChatArea";
 import { models, type Model } from "@/lib/models";
 import { useTheme } from "next-themes";
-import { useFont } from "@/components/FontProvider";
 import SearchModal from "@/components/SearchModal";
 
 export default function Page() {
@@ -19,7 +18,6 @@ export default function Page() {
   const [isLoading, setIsLoading] = useState(false);
   const [anonymousId, setAnonymousId] = useState<string>('');
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-  const { font, setFont } = useFont();
   
   const [activeModel, setActiveModel] = useState<Model>(() => models.find(m => m.active) || models[0]);
 
@@ -135,8 +133,6 @@ export default function Page() {
             isHome={true}
             activeModel={activeModel}
             onModelSelect={setActiveModel}
-            font={font}
-            setFont={setFont}
           />
         </div>
       </div>

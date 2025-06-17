@@ -9,7 +9,6 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { AppFont } from "@/types";
 import { useFont } from "@/components/FontProvider";
-import { Slider } from "@/components/ui/slider";
 
 const ShortcutFormat = (shortcut: string) => {
     return <span className="flex gap-2">
@@ -22,7 +21,7 @@ const ShortcutFormat = (shortcut: string) => {
 const SettingsPage = () => {
     const { theme, setTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
-    const { data: session, status } = useSession();
+    const { data: session } = useSession();
     const { font: selectedFont, setFont: setSelectedFont } = useFont();
     const [hue, setHue] = useState(0);
     const [contrast, setContrast] = useState(100);
@@ -154,7 +153,7 @@ const SettingsPage = () => {
                 <div className="mb-24">
                     <div className="mb-6">
                         <p className="font-semibold mb-2">Color Hue</p>
-                        <p className="opacity-50 mb-2">Adjust the hue rotation of the app's colors.</p>
+                        <p className="opacity-50 mb-2">Adjust the hue rotation of the app&apos;s colors.</p>
                         <div className="flex items-center gap-4">
                             <div className="w-full">
                                 <input
@@ -176,7 +175,7 @@ const SettingsPage = () => {
                     
                     <div className="mb-6">
                         <p className="font-semibold mb-2">Contrast</p>
-                        <p className="opacity-50 mb-2">Adjust the contrast of the app's interface.</p>
+                        <p className="opacity-50 mb-2">Adjust the contrast of the app&apos;s interface.</p>
                         <div className="flex items-center gap-4">
                             <div className="w-full">
                                 <input
