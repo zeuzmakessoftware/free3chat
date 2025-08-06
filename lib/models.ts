@@ -14,6 +14,7 @@ export interface Model {
 
 export const rawModels: Record<string, Omit<Model, "id">> = {
   "Gemini 2.5 Flash": { name: "Gemini 2.5 Flash", logo: GeminiIcon, info: "Google's latest fast model", capabilities: ["vision", "web", "pdf"], favorite: true, premium: false, active: true },
+  "GPT-OSS 120B": { name: "GPT-OSS 120B", logo: OpenAIIcon, info: "OpenAI GPT-OSS 120B", capabilities: ["reasoning"], favorite: true, premium: false, active: true },
   "Llama 3.3 70b": { name: "Llama 3.3 70b", logo: MetaIcon, info: "Meta’s Llama 3.3 70b on Groq", capabilities: [], favorite: true, premium: false, active: true },
   "Llama 4 Maverick": { name: "Llama 4 Maverick", logo: MetaIcon, info: "Meta’s Llama 4 Maverick on Groq", capabilities: [], favorite: true, premium: false, active: true },
   "Qwen qwq-32b": { name: "Qwen qwq-32b", logo: QwenIcon, info: "Qwen base 32b on Groq", capabilities: ["reasoning"], favorite: true, premium: false, active: true },

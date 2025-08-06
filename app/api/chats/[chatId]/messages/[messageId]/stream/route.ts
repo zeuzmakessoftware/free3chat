@@ -34,6 +34,7 @@ const modelMapping: Record<string, { provider: 'google' | 'groq'; name: string }
   'llama-4-maverick': { provider: 'groq', name: 'meta-llama/llama-4-maverick-17b-128e-instruct' },
   'qwen-qwq-32b': { provider: 'groq', name: 'qwen-qwq-32b' },
   'deepseek-r1-llama-distilled': { provider: 'groq', name: 'deepseek-r1-distill-llama-70b' },
+  'gpt-oss': { provider: 'groq', name: 'openai/gpt-oss-120b' },
 };
 const defaultModel = modelMapping['gemini-2-5-flash'];
 
